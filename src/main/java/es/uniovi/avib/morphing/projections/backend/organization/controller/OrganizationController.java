@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Organization;
+import es.uniovi.avib.morphing.projections.backend.organization.domain.UserCaseResponse;
 import es.uniovi.avib.morphing.projections.backend.organization.service.OrganizationService;
 
 import lombok.RequiredArgsConstructor;
@@ -75,5 +76,14 @@ public class OrganizationController {
 		log.debug("findById: found organization with organizationId: {}", organizationId);
 			
 		return new ResponseEntity<Organization>(organization, HttpStatus.OK);		
+	}	
+	
+	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/users/{userId}/aggregate")	
+	public ResponseEntity<List<UserCaseResponse>> findByUserAggregate(@PathVariable String userId) {
+		List<UserCaseResponse> userCaseResponse = organizationService.findByUserAggregate(userId);
+										
+		log.debug("findById: found organization with userId: {}", userId);
+			
+		return new ResponseEntity<List<UserCaseResponse>>(userCaseResponse, HttpStatus.OK);		
 	}	
 }
