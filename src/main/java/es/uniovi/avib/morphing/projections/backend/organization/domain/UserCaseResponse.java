@@ -11,5 +11,5 @@ public class UserCaseResponse {
 	private String organization;
 	private String project;
 	private String cs;
-	private List<Index> index;
+	private List<IndexResponse> indices;
 }

@@ -38,6 +38,10 @@ public class Index {
 	@Field("description")
 	private String description;
 	
+	@NotNull(message = "Type may not be null")
+	@Field("type")
+	private String type;
+	
 	@NotNull(message = "Creation Date may not be null")
 	@Field("creation_date")
 	private Date creationDate;	

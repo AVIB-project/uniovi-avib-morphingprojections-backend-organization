@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import es.uniovi.avib.morphing.projections.backend.organization.repository.OrganizationRepository;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Case;
+import es.uniovi.avib.morphing.projections.backend.organization.domain.Index;
+import es.uniovi.avib.morphing.projections.backend.organization.domain.IndexResponse;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Organization;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Project;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.UserCaseResponse;
@@ -217,23 +219,33 @@ public class OrganizationService {
 				
 		List<Organization> organizations = mongoTemplate.aggregate(aggregation, "organization", Organization.class).getMappedResults();
 		
-		List<UserCaseResponse> userCaseResponse = new ArrayList<UserCaseResponse>();		
+		List<UserCaseResponse> userCaseResponses = new ArrayList<UserCaseResponse>();		
 		for (Organization organization : organizations) { 
 			for (Project project : organization.getProjects()) {
 				for (Case cs : project.getCases()) {
 					if (cs.getUserCases().size() > 0) {
-						userCaseResponse.add(
-								UserCaseResponse.builder()
-									.organization(organization.getDescription())
-									.project(project.getDescription())
-									.cs(cs.getDescription())
-									.index(cs.getIndices())
-								.build());						
+						UserCaseResponse userCaseResponse = UserCaseResponse.builder()
+								.organization(organization.getDescription())
+								.project(project.getDescription())
+								.cs(cs.getDescription())
+								.indices(new ArrayList<IndexResponse>())
+						.build();
+														
+						for (Index index : cs.getIndices()) {	
+							userCaseResponse.getIndices().add(IndexResponse
+									.builder()
+										.name(index.getName())
+										.description(index.getDescription())
+										.type(index.getType())
+									.build());
+						}
+						
+						userCaseResponses.add(userCaseResponse);						
 					}
 				}
 			}
 		}
 					
-		return userCaseResponse;
+		return userCaseResponses;
 	}	
 }
