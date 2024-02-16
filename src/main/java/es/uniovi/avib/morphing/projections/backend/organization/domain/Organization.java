@@ -18,8 +18,11 @@ import lombok.Setter;
 public class Organization {
 	@Id	
 	private String organizationId;
-			
-	@NotNull(message = "Description may not be null")
+
+	@NotNull(message = "Name may not be null")
+	@Field("name")
+	private String name;
+	
 	@Field("description")
 	private String description;
 	

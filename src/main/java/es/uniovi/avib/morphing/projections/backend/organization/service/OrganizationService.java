@@ -12,11 +12,13 @@ import org.springframework.stereotype.Service;
 import es.uniovi.avib.morphing.projections.backend.organization.repository.OrganizationRepository;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Case;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Index;
-import es.uniovi.avib.morphing.projections.backend.organization.domain.IndexResponse;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Organization;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Project;
-import es.uniovi.avib.morphing.projections.backend.organization.domain.UserCaseResponse;
-
+import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.IndexDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.OrganizationDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.ProjectDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.UserCaseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -157,7 +159,7 @@ public class OrganizationService {
 		return null;
 	}
 	
-	public List<UserCaseResponse> findByUserAggregate(String userId) {
+	public List<UserCaseDto> findByUserAggregate(String userId) {
 		log.debug("findById: found organizations with user id: {}", userId);
 		
 		AggregationOperation casesOperation = Aggregation
@@ -219,20 +221,32 @@ public class OrganizationService {
 				
 		List<Organization> organizations = mongoTemplate.aggregate(aggregation, "organization", Organization.class).getMappedResults();
 		
-		List<UserCaseResponse> userCaseResponses = new ArrayList<UserCaseResponse>();		
+		List<UserCaseDto> userCaseResponses = new ArrayList<UserCaseDto>();		
 		for (Organization organization : organizations) { 
 			for (Project project : organization.getProjects()) {
 				for (Case cs : project.getCases()) {
 					if (cs.getUserCases().size() > 0) {
-						UserCaseResponse userCaseResponse = UserCaseResponse.builder()
-								.organization(organization.getDescription())
-								.project(project.getDescription())
-								.cs(cs.getDescription())
-								.indices(new ArrayList<IndexResponse>())
+						UserCaseDto userCaseResponse = UserCaseDto.builder()
+								.organizationDto(
+										OrganizationDto.builder()
+											.name(organization.getName())
+											.description(organization.getDescription())
+										.build())
+								.projectDto(
+										ProjectDto.builder()
+											.name(project.getName())
+											.description(project.getDescription())
+										.build())
+								.caseDto(
+										CaseDto.builder()
+											.name(cs.getName())
+											.description(cs.getDescription())
+											.indices(new ArrayList<IndexDto>())
+										.build())								
 						.build();
 														
 						for (Index index : cs.getIndices()) {	
-							userCaseResponse.getIndices().add(IndexResponse
+							userCaseResponse.getCaseDto().getIndices().add(IndexDto
 									.builder()
 										.name(index.getName())
 										.description(index.getDescription())
