@@ -17,15 +17,7 @@ import lombok.Setter;
 public class Index {
 	@Id	
 	private String indexId;
-			
-	@NotNull(message = "Organoization Id may not be null")
-	@Field("organization_id")
-	private String organizationId;
-	
-	@NotNull(message = "Project Id may not be null")
-	@Field("project_id")
-	private String projectId;
-	
+				
 	@NotNull(message = "Case Id may not be null")
 	@Field("case_id")
 	private String caseId;
