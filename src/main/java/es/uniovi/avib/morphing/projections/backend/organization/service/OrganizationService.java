@@ -1,6 +1,5 @@
 package es.uniovi.avib.morphing.projections.backend.organization.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -53,113 +52,7 @@ public class OrganizationService {
 		organizationRepository.deleteById(organizationId);
 	}
 	
-	public List<Organization> findAllAggregate() {		
-		log.debug("findAll: found all organizations");
-		
-		AggregationOperation casesOperation = Aggregation
-			.stage("""
-					{
-						$lookup:					
-						{
-						  from: 'project',
-						  localField: '_id',
-						  foreignField: 'organization_id',
-						  as: 'projects',
-						  pipeline: [
-						    {
-						      $lookup: {
-						        from: "case",
-						        localField: "_id",
-						        foreignField: "project_id",
-						        as: "cases",
-						        pipeline: [
-						          {
-						            $lookup: {
-						               from: "index",
-						               localField: "_id",
-						               foreignField: "case_id",
-						               as: "indices",
-						            },
-						          },
-						          {
-						            $lookup: {
-						              from: "user_case",
-						              localField: "_id",
-						              foreignField: "case_id",
-						              as: "user_cases"							                
-						            }
-						          }            
-						        ]       						        
-						      }
-						    }
-						  ]						  
-						}
-					}								
-					""");
-		
-		Aggregation aggregation = Aggregation.newAggregation(casesOperation);
-			
-		return mongoTemplate.aggregate(aggregation, "organization", Organization.class).getMappedResults();
-	}
-	
-	public Organization findByIdAggregate(String organizationId) {
-		log.debug("findById: found organization with id: {}", organizationId);
-		
-		AggregationOperation organizationnOperation = Aggregation
-				.match(Criteria.where("_id").is(organizationId));
-		
-		AggregationOperation casesOperation = Aggregation
-				.stage("""
-						{
-							$lookup:					
-							{
-							  from: 'project',
-							  localField: '_id',
-							  foreignField: 'organization_id',
-							  as: 'projects'
-							  pipeline: [
-							    {
-							      $lookup: {
-							        from: "case",
-							        localField: "_id",
-							        foreignField: "project_id",
-								    as: "cases",							        
-							        pipeline: [
-							            {
-							              $lookup: {
-							                from: "index",
-							                localField: "_id",
-							                foreignField: "case_id",
-							                as: "indices",
-							              },
-							            },
-							            {
-							              $lookup: {
-							                from: "user_case",
-							                localField: "_id",
-							                foreignField: "case_id",
-							                as: "user_cases",
-							              }
-							            }            
-							         ]							       
-							      }
-							    }
-							  ]							  
-							}
-						}								
-						""");
-		
-		Aggregation aggregation = Aggregation.newAggregation(organizationnOperation, casesOperation);
-						
-		List<Organization> organizations = mongoTemplate.aggregate(aggregation, "organization", Organization.class).getMappedResults();
-			
-		if (organizations.size() > 0)
-			return organizations.get(0);
-					
-		return null;
-	}
-	
-	public List<UserCaseDto> findByUserAggregate(String userId) {
+	public UserCaseDto findByUserAggregate(String userId) {
 		log.debug("findById: found organizations with user id: {}", userId);
 		
 		AggregationOperation casesOperation = Aggregation
@@ -221,45 +114,48 @@ public class OrganizationService {
 				
 		List<Organization> organizations = mongoTemplate.aggregate(aggregation, "organization", Organization.class).getMappedResults();
 		
-		List<UserCaseDto> userCaseResponses = new ArrayList<UserCaseDto>();		
-		for (Organization organization : organizations) { 
+		// create User Cases from organization configuration by user
+		UserCaseDto userCaseDto = new UserCaseDto();		
+		for (Organization organization : organizations) {
+			OrganizationDto organizationDto = OrganizationDto.builder()
+					.name(organization.getName())
+					.description(organization.getDescription())
+					.build();
+											
 			for (Project project : organization.getProjects()) {
-				for (Case cs : project.getCases()) {
-					if (cs.getUserCases().size() > 0) {
-						UserCaseDto userCaseResponse = UserCaseDto.builder()
-								.organizationDto(
-										OrganizationDto.builder()
-											.name(organization.getName())
-											.description(organization.getDescription())
-										.build())
-								.projectDto(
-										ProjectDto.builder()
-											.name(project.getName())
-											.description(project.getDescription())
-										.build())
-								.caseDto(
-										CaseDto.builder()
-											.name(cs.getName())
-											.description(cs.getDescription())
-											.indices(new ArrayList<IndexDto>())
-										.build())								
+				ProjectDto projectDto = ProjectDto.builder()
+						.name(project.getName())
+						.description(project.getDescription())
 						.build();
+								
+				for (Case cs : project.getCases()) {					
+					if (cs.getUserCases().size() > 0) {
+						CaseDto caseDto = CaseDto.builder()
+								.name(cs.getName())
+								.description(cs.getDescription())
+								.build();
+						
+						projectDto.getCases().add(caseDto);											
 														
 						for (Index index : cs.getIndices()) {	
-							userCaseResponse.getCaseDto().getIndices().add(IndexDto
+							caseDto.getIndices().add(IndexDto
 									.builder()
 										.name(index.getName())
 										.description(index.getDescription())
 										.type(index.getType())
 									.build());
-						}
-						
-						userCaseResponses.add(userCaseResponse);						
+						}										
 					}
 				}
+				
+				if (projectDto.getCases().size() > 0)
+					organizationDto.getProjects().add(projectDto);
 			}
+			
+			if (organizationDto.getProjects().size() > 0)
+				userCaseDto.getOrganizations().add(organizationDto);			
 		}
 					
-		return userCaseResponses;
+		return userCaseDto;
 	}	
 }

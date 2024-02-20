@@ -60,30 +60,12 @@ public class OrganizationController {
 		organizationService.deleteById(organizationId);					
 	}
 	
-	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/aggregate")
-	public ResponseEntity<List<Organization>> findAllAggregate() {
-		List<Organization> organizations = (List<Organization>) organizationService.findAllAggregate();
-					
-		log.debug("findAll: found {} organizations", organizations.size());
-		
-		return new ResponseEntity<List<Organization>>(organizations, HttpStatus.OK);			
-	}
-
-	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/{organizationId}/aggregate")	
-	public ResponseEntity<Organization> findByIdAggregate(@PathVariable String organizationId) {
-		Organization organization = organizationService.findByIdAggregate(organizationId);
-										
-		log.debug("findById: found organization with organizationId: {}", organizationId);
-			
-		return new ResponseEntity<Organization>(organization, HttpStatus.OK);		
-	}	
-	
 	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/users/{userId}/aggregate")	
-	public ResponseEntity<List<UserCaseDto>> findByUserAggregate(@PathVariable String userId) {
-		List<UserCaseDto> userCaseResponse = organizationService.findByUserAggregate(userId);
+	public ResponseEntity<UserCaseDto> findByUserAggregate(@PathVariable String userId) {
+		UserCaseDto userCaseDto = organizationService.findByUserAggregate(userId);
 										
 		log.debug("findById: found organization with userId: {}", userId);
 			
-		return new ResponseEntity<List<UserCaseDto>>(userCaseResponse, HttpStatus.OK);		
+		return new ResponseEntity<UserCaseDto>(userCaseDto, HttpStatus.OK);		
 	}	
 }
