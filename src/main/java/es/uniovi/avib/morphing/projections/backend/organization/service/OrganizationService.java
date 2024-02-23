@@ -54,7 +54,7 @@ public class OrganizationService {
 	public UserCaseDto findByUserAggregate(String userId) {
 		log.debug("findById: found organizations with user id: {}", userId);
 		
-		AggregationOperation casesOperation = Aggregation
+		AggregationOperation aggregationOperation = Aggregation
 				.stage("""
 						{
 							$lookup:					
@@ -109,7 +109,7 @@ public class OrganizationService {
 						}								
 						""".replace("$userId", userId));
 			
-		Aggregation aggregation = Aggregation.newAggregation(casesOperation);
+		Aggregation aggregation = Aggregation.newAggregation(aggregationOperation);
 				
 		List<Organization> organizations = mongoTemplate.aggregate(aggregation, "organization", Organization.class).getMappedResults();
 		

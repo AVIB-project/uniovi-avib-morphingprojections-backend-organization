@@ -1,7 +1,6 @@
 package es.uniovi.avib.morphing.projections.backend.organization.domain;
 
 import java.util.Date;
-import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,26 +13,26 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Document(collection = "case")
-public class Case {
+@Document(collection = "resource")
+public class Resource {
 	@Id	
+	private String resourceId;
+				
+	@NotNull(message = "Case Id may not be null")
+	@Field("case_id")
 	private String caseId;
-
-	@NotNull(message = "Name may not be null")
-	@Field("name")
-	private String name;
 	
+	@NotNull(message = "Name may not be null")
+	@Field("file")
+	private String file;
+	
+	@NotNull(message = "Description may not be null")
 	@Field("description")
 	private String description;
 	
-	@Field("indices")
-	List<Index> indices;
-
-	@Field("resources")
-	List<Resource> resources;
-	
-	@Field("user_cases")
-	List<UserCase> userCases;
+	@NotNull(message = "Type may not be null")
+	@Field("type")
+	private String type;
 	
 	@NotNull(message = "Creation Date may not be null")
 	@Field("creation_date")
@@ -47,5 +46,5 @@ public class Case {
 	private Date updatedDate;	
 	
 	@Field("updated_by")
-	private String updatedBy;	
+	private String updatedBy;
 }
