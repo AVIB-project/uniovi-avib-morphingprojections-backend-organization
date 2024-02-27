@@ -3,13 +3,18 @@ package es.uniovi.avib.morphing.projections.backend.organization.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.google.gson.Gson;
 
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Resource;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ResourceDto;
@@ -67,5 +72,23 @@ public class ResourceController {
 		log.debug("findById: find resources with caseId: {}", caseId);
 			
 		return new ResponseEntity<List<ResourceDto>>(resourcesDto, HttpStatus.OK);		
+	}
+	
+    @RequestMapping(method = { RequestMethod.POST }, consumes = { MediaType.MULTIPART_FORM_DATA_VALUE}, produces = "application/json", value = "/organizations/{organizationId}/projects/{projectId}/cases/{caseId}")
+    public String uploadFiles(
+    		@PathVariable String organizationId,
+    		@PathVariable String projectId,
+    		@PathVariable String caseId,
+    		@RequestPart("type") String type,
+    		@RequestPart("description") String description,
+            @RequestPart("file[]") MultipartFile[] files) {
+		log.info("upload files from controller");
+		
+		Object result = resourceService.uploadFiles(organizationId, projectId, caseId, type, description, files);
+													
+        Gson gson = new Gson();
+        String response = gson.toJson(result, Object.class);
+                
+        return response;			
 	}	
 }

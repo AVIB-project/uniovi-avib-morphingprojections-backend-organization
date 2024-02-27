@@ -117,12 +117,14 @@ public class OrganizationService {
 		UserCaseDto userCaseDto = new UserCaseDto();		
 		for (Organization organization : organizations) {
 			OrganizationDto organizationDto = OrganizationDto.builder()
+					.id(organization.getOrganizationId())
 					.name(organization.getName())
 					.description(organization.getDescription())
 					.build();
 											
 			for (Project project : organization.getProjects()) {
 				ProjectDto projectDto = ProjectDto.builder()
+						.id(project.getProjectId())
 						.name(project.getName())
 						.description(project.getDescription())
 						.build();
@@ -130,6 +132,7 @@ public class OrganizationService {
 				for (Case cs : project.getCases()) {					
 					if (cs.getUserCases().size() > 0) {
 						CaseDto caseDto = CaseDto.builder()
+								.id(cs.getCaseId())
 								.name(cs.getName())
 								.description(cs.getDescription())
 								.build();
@@ -139,6 +142,7 @@ public class OrganizationService {
 						for (Index index : cs.getIndices()) {	
 							caseDto.getIndices().add(IndexDto
 									.builder()
+										.id(index.getIndexId())
 										.name(index.getName())
 										.description(index.getDescription())
 										.type(index.getType())

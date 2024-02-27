@@ -16,6 +16,11 @@ spring:
       database: configuration
       username: root
       password: password
+      
+  servlet:    
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB      
 
 # using ingress
 #spring:
@@ -29,7 +34,11 @@ spring:
 #    database: configuration
 #    username: root
 #    password: password
-          
+
+storage:
+  host: localhost
+  port: 8083
+            
 ---
 server:
   port: 8082
@@ -44,6 +53,7 @@ spring:
   config:
     activate:
       on-profile: avib
+      
   data:
     mongodb:
       host: avib-mongodb
@@ -51,4 +61,13 @@ spring:
       authentication-database: admin
       database: configuration
       username: root
-      password: password        
+      password: password   
+      
+  servlet:    
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB      
+      
+storage:        
+  host: uniovi-avib-morphingprojections-backend-storage
+  port: 8083           
