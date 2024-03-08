@@ -75,7 +75,7 @@ public class ResourceController {
 	}
 	
     @RequestMapping(method = { RequestMethod.POST }, consumes = { MediaType.MULTIPART_FORM_DATA_VALUE}, produces = "application/json", value = "/organizations/{organizationId}/projects/{projectId}/cases/{caseId}")
-    public String uploadFiles(
+    public String uploadResources(
     		@PathVariable String organizationId,
     		@PathVariable String projectId,
     		@PathVariable String caseId,
@@ -84,11 +84,22 @@ public class ResourceController {
             @RequestPart("file[]") MultipartFile[] files) {
 		log.info("upload files from controller");
 		
-		Object result = resourceService.uploadFiles(organizationId, projectId, caseId, type, description, files);
+		Object result = resourceService.uploadResources(organizationId, projectId, caseId, type, description, files);
 													
         Gson gson = new Gson();
         String response = gson.toJson(result, Object.class);
                 
         return response;			
-	}	
+	}
+    
+    @RequestMapping(method = { RequestMethod.DELETE }, produces = "application/json", value = "/organizations/{organizationId}/projects/{projectId}/cases/{caseId}/file/{file}")
+    public void deleteResource(
+    		@PathVariable String organizationId,
+    		@PathVariable String projectId,
+    		@PathVariable String caseId,
+    		@PathVariable String file) {
+		log.info("deleteFile file from controller");
+		
+		resourceService.deleteResource(organizationId, projectId, caseId, file);			
+	}    
 }

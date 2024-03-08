@@ -33,8 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ResourceService {
 	private final RestTemplate restTemplate;
-	private final StorageConfig storageConfig;
-	
+	private final StorageConfig storageConfig;	
 	private final ResourceRepository resourceRepository;
 	private final MongoTemplate mongoTemplate;
 	
@@ -87,8 +86,27 @@ public class ResourceService {
 									
 		return resourcesDto;
 	}
-	    
-    public Object uploadFiles(String organizationId, String projectId, String caseId, String type, String description, MultipartFile[] files) {
+
+	public Resource findByFileAndCaseId(String file, String caseId) {
+		log.debug("finfByCaseId: find resources by case id: {} and file {}", caseId, file);
+		
+		AggregationOperation aggregationOperationCaseId = Aggregation
+				.match(Criteria.where("case_id").is(new ObjectId(caseId)));
+		
+		AggregationOperation aggregationOperationFile = Aggregation
+				.match(Criteria.where("file").is(file));
+		
+		Aggregation aggregation = Aggregation.newAggregation(aggregationOperationFile, aggregationOperationCaseId);
+		
+		List<Resource> resources = mongoTemplate.aggregate(aggregation, "resource", Resource.class).getMappedResults();
+						
+		if (resources.size() == 1)
+			return resources.get(0);
+		
+		return null;
+	}
+	
+    public Object uploadResources(String organizationId, String projectId, String caseId, String type, String description, MultipartFile[] files) {
 		log.info("update files from service");
 				
 		// put object into minio
@@ -102,8 +120,12 @@ public class ResourceService {
 		
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		Arrays.asList(files).forEach(file -> {
-			// save resource		
-			Resource resource = Resource.builder()
+			// check if the resource exist
+			Resource resource = findByFileAndCaseId(file.getOriginalFilename(), caseId);
+			
+			// if not exist create a new one
+			if (resource == null) {
+				resource = Resource.builder()
 					.bucket(organizationId + "/" + projectId + "/" + caseId)
 					.file(file.getOriginalFilename())
 					.caseId(new ObjectId(caseId))
@@ -112,7 +134,13 @@ public class ResourceService {
 					.creationBy("Administrator")
 					.creationDate(new Date())
 					.build();
-			
+			} else {
+				resource.setDescription(description);
+				resource.setType(type);
+				resource.setUpdatedBy("Administrator");
+				resource.setUpdatedDate(new Date());						
+			}
+						
 			save(resource);
 			
 			// put resource object in object storage
@@ -125,4 +153,22 @@ public class ResourceService {
 		
 		return responseEntityStr.getBody();			
 	}
+    
+	public void deleteResource(String organizationId, String projectId, String caseId, String file) {
+		log.info("deleteResource file {} from service", file);
+		
+		// remove resource in object storage
+		String url = "http://" + storageConfig.getHost() + ":" + storageConfig.getPort() + "/storage"
+			+ "/organizations/" + organizationId
+			+ "/projects/" + projectId
+			+ "/cases/" + caseId
+			+ "/file/" + file;
+					
+		restTemplate.delete(url);  	
+		
+		// remove resource in configuration
+		Resource resource = findByFileAndCaseId(file, caseId);
+		
+		deleteById(resource.getResourceId());
+	}    
 }
