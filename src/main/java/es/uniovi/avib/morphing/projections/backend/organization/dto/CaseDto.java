@@ -13,6 +13,6 @@ public class CaseDto {
 	private String name;
 	private String description;
 	@Builder.Default
-	private List<IndexDto> indices = new ArrayList<IndexDto>();
+	private List<ResourceDto> resources = new ArrayList<ResourceDto>();
 }
 	

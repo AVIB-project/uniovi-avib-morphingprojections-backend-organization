@@ -26,9 +26,6 @@ public class Case {
 	@Field("description")
 	private String description;
 	
-	@Field("indices")
-	List<Index> indices;
-
 	@Field("resources")
 	List<Resource> resources;
 	

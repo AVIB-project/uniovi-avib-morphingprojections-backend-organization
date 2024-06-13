@@ -9,13 +9,13 @@ import org.springframework.stereotype.Service;
 
 import es.uniovi.avib.morphing.projections.backend.organization.repository.OrganizationRepository;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Case;
-import es.uniovi.avib.morphing.projections.backend.organization.domain.Index;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Organization;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Project;
+import es.uniovi.avib.morphing.projections.backend.organization.domain.Resource;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseDto;
-import es.uniovi.avib.morphing.projections.backend.organization.dto.IndexDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.OrganizationDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ProjectDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.ResourceDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserCaseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -73,10 +73,10 @@ public class OrganizationService {
 							        pipeline: [
 							          {
 							            $lookup: {
-							              from: "index",
+							              from: "resource",
 							              localField: "_id",
 							              foreignField: "case_id",
-							              as: "indices",
+							              as: "resources",
 							            },
 							          },
 							          {
@@ -139,13 +139,13 @@ public class OrganizationService {
 						
 						projectDto.getCases().add(caseDto);											
 														
-						for (Index index : cs.getIndices()) {	
-							caseDto.getIndices().add(IndexDto
+						for (Resource resource : cs.getResources()) {
+							caseDto.getResources().add(ResourceDto
 									.builder()
-										.id(index.getIndexId())
-										.name(index.getName())
-										.description(index.getDescription())
-										.type(index.getType())
+										.bucket(resource.getBucket())
+										.file(resource.getFile())
+										.description(resource.getDescription())
+										.type(resource.getType())
 									.build());
 						}										
 					}
