@@ -87,14 +87,33 @@ public class ResourceService {
 		return resourcesDto;
 	}
 
-	public Resource findByFileAndCaseId(String file, String caseId) {
+	public Resource findByFileAndName(String organizationId, String projectId, String caseId, String file) {
 		log.debug("finfByCaseId: find resources by case id: {} and file {}", caseId, file);
 		
 		AggregationOperation aggregationOperationCaseId = Aggregation
 				.match(Criteria.where("case_id").is(new ObjectId(caseId)));
 		
 		AggregationOperation aggregationOperationFile = Aggregation
-				.match(Criteria.where("file").is(file));
+				.match(Criteria.where("file").is(projectId + "/" + caseId + "/" + file));
+		
+		Aggregation aggregation = Aggregation.newAggregation(aggregationOperationFile, aggregationOperationCaseId);
+		
+		List<Resource> resources = mongoTemplate.aggregate(aggregation, "resource", Resource.class).getMappedResults();
+						
+		if (resources.size() == 1)
+			return resources.get(0);
+		
+		return null;
+	}
+	
+	public Resource findByFileAndType(String caseId, String type) {
+		log.debug("finfByCaseId: find resources by case id: {} and type {}", caseId, type);
+		
+		AggregationOperation aggregationOperationCaseId = Aggregation
+				.match(Criteria.where("case_id").is(new ObjectId(caseId)));
+		
+		AggregationOperation aggregationOperationFile = Aggregation
+				.match(Criteria.where("type").is(type));
 		
 		Aggregation aggregation = Aggregation.newAggregation(aggregationOperationFile, aggregationOperationCaseId);
 		
@@ -119,15 +138,15 @@ public class ResourceService {
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 		
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-		Arrays.asList(files).forEach(file -> {
-			// check if the resource exist
-			Resource resource = findByFileAndCaseId(file.getOriginalFilename(), caseId);
+		Arrays.asList(files).forEach(file -> {			
+			// check if the resource exist (only one file pear each case type (datamatrix, sample_annotation, attribute_annotation)			
+			Resource resource = findByFileAndType(caseId, type);
 			
 			// if not exist create a new one
 			if (resource == null) {
 				resource = Resource.builder()
-					.bucket(organizationId + "/" + projectId + "/" + caseId)
-					.file(file.getOriginalFilename())
+					.bucket(organizationId)
+					.file(projectId + "/" + caseId + "/" + file.getOriginalFilename())
 					.caseId(new ObjectId(caseId))
 					.type(type)
 					.description(description)
@@ -135,8 +154,8 @@ public class ResourceService {
 					.creationDate(new Date())
 					.build();
 			} else {
-				resource.setDescription(description);
-				resource.setType(type);
+				resource.setFile(projectId + "/" + caseId + "/" + file.getOriginalFilename());
+				resource.setDescription(description);				
 				resource.setUpdatedBy("Administrator");
 				resource.setUpdatedDate(new Date());						
 			}
@@ -167,7 +186,7 @@ public class ResourceService {
 		restTemplate.delete(url);  	
 		
 		// remove resource in configuration
-		Resource resource = findByFileAndCaseId(file, caseId);
+		Resource resource = findByFileAndName(organizationId, projectId, caseId, file);
 		
 		deleteById(resource.getResourceId());
 	}    
