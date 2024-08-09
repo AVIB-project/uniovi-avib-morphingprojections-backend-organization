@@ -25,9 +25,17 @@ public class User {
 	@Field("firstname")
 	private String firstname;
 	
-	@NotNull(message = "Surname may not be null")
-	@Field("surname")
-	private String surname;	
+	@NotNull(message = "Lastname may not be null")
+	@Field("lastname")
+	private String lastName;	
+	
+	@NotNull(message = "Username may not be null")
+	@Field("username")
+	private String username;
+	
+	@NotNull(message = "Password may not be null")
+	@Field("password")
+	private String password;
 	
 	@NotNull(message = "Email may not be null")
 	@Field("email")
