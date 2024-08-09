@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.uniovi.avib.morphing.projections.backend.organization.domain.User;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.UserRequestDto;
 import es.uniovi.avib.morphing.projections.backend.organization.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,8 +44,8 @@ public class UserController {
 	}
 	
 	@RequestMapping(method = { RequestMethod.POST }, produces = "application/json")	
-	public ResponseEntity<User> save(@RequestBody User user) {		
-		User userSaved = userService.save(user);
+	public ResponseEntity<User> save(@RequestBody UserRequestDto userRequestDto) {		
+		User userSaved = userService.save(userRequestDto);
 
 		log.debug("save: create/update user with userId: {} from Manager Service", userSaved.getUserId());
 			
@@ -52,7 +53,7 @@ public class UserController {
 	}
 
 	@RequestMapping(method = { RequestMethod.DELETE },value = "/{userId}")	
-	public void deleteById(@PathVariable String userId) {
+	public void deleteById(@PathVariable String userId) throws Exception {
 		log.debug("deleteById: remove user with userId: {}", userId);
 			
 		userService.deleteById(userId);					

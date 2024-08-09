@@ -2,17 +2,20 @@ package es.uniovi.avib.morphing.projections.backend.organization.domain;
 
 import java.util.Date;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import jakarta.validation.constraints.NotNull;
-
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import jakarta.validation.constraints.NotNull;
+
 @Getter
 @Setter
+@Builder
 @Document(collection = "user_organization")
 public class UserOrganization {
 	@Id	
@@ -20,11 +23,11 @@ public class UserOrganization {
 	
 	@NotNull(message = "Organization Id may not be null")
 	@Field("organization_id")
-	private String organizationId;
+	private ObjectId organizationId;
 	
 	@NotNull(message = "User Id may not be null")
 	@Field("user_id")
-	private String userId;
+	private ObjectId userId;
 		
 	@NotNull(message = "Creation Date may not be null")
 	@Field("creation_date")

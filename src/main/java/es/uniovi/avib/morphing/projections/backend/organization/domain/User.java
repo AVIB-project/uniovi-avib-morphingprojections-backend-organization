@@ -7,11 +7,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 @Document(collection = "user")
 public class User {
 	@Id	
@@ -23,7 +25,7 @@ public class User {
 	
 	@NotNull(message = "Firstname may not be null")
 	@Field("firstname")
-	private String firstname;
+	private String firstName;
 	
 	@NotNull(message = "Lastname may not be null")
 	@Field("lastname")
@@ -32,11 +34,7 @@ public class User {
 	@NotNull(message = "Username may not be null")
 	@Field("username")
 	private String username;
-	
-	@NotNull(message = "Password may not be null")
-	@Field("password")
-	private String password;
-	
+		
 	@NotNull(message = "Email may not be null")
 	@Field("email")
 	private String email;
