@@ -6,11 +6,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import org.bson.types.ObjectId;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import org.bson.types.ObjectId;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,8 @@ public class UserService {
 	private final UserOrganizationRepository userOrganizationRepository;
 	private final SecurityConfig securityConfig;
 	
-	private final String REALM = "avib";
+	private final String DEF_REALM = "avib";
+	private final String DEF_PASSWORD = "password";
 	
 	public List<User> findAll() {
 		log.debug("findAll: found all users");
@@ -56,37 +57,67 @@ public class UserService {
 		log.debug("save: user");
 
 		// save user in Keycloack
-		String url = "http://" + securityConfig.getHost() + ":" + securityConfig.getPort() + "/security/realms/" + REALM + "/users";
+		String url = "http://" + securityConfig.getHost() + ":" + securityConfig.getPort() + "/security/realms/" + DEF_REALM + "/users";
 
-		UserKeycloakDto userKeycloakDto = UserKeycloakDto.builder()
+		UserKeycloakDto userKeycloakDto = null;
+		if (userRequestDto.getExternalId() == null) {			
+			userKeycloakDto = UserKeycloakDto.builder()
+				.username(userRequestDto.getUsername())
+				.password(DEF_PASSWORD)
 				.firstname(userRequestDto.getFirstname())
 				.lastname(userRequestDto.getLastname())
-				.username(userRequestDto.getUsername())
-				.password(userRequestDto.getPassword())
 				.email(userRequestDto.getEmail())				
 				.realmRoles(new ArrayList<String>(Arrays.asList(userRequestDto.getRole())))
 				.enabled(true)
-		.build();
+			.build();
+		} else {
+			userKeycloakDto = UserKeycloakDto.builder()
+					.username(userRequestDto.getUsername())
+					.firstname(userRequestDto.getFirstname())
+					.lastname(userRequestDto.getLastname())
+					.email(userRequestDto.getEmail())				
+					.realmRoles(new ArrayList<String>(Arrays.asList(userRequestDto.getRole())))
+					.enabled(true)
+			.build();
+		}
 		
-		ResponseEntity<String> responseEntityStr = restTemplate.postForEntity(url, userKeycloakDto, String.class);
+		ResponseEntity<String> responseEntityStr = null;
+		if (userRequestDto.getExternalId() == null)
+			responseEntityStr = restTemplate.postForEntity(url, userKeycloakDto, String.class);
+		else {
+			restTemplate.put(url + "/" + userRequestDto.getExternalId(), userKeycloakDto);
+		}			
 		
-		// save user in system DB	
+		// save user in system	
 		User user = User.builder()
 				.firstName(userRequestDto.getFirstname())
 				.lastName(userRequestDto.getLastname())
 				.username(userRequestDto.getUsername())
-				.email(userRequestDto.getEmail())		
+				.email(userRequestDto.getEmail())
+				.language(userRequestDto.getLanguage())
+				.address(userRequestDto.getAddress())
+				.city(userRequestDto.getCity())
+				.country(userRequestDto.getCountry())
+				.phone(userRequestDto.getPhone())
+				.notes(userRequestDto.getNotes())
 				.role(userRequestDto.getRole())
-				.externalId(responseEntityStr.getBody().toString())
 				.creationDate(new Date())
 				.creationBy("Administrator")
 				.active(true)
 		.build();
 			
+		if (responseEntityStr != null)
+			user.setExternalId(responseEntityStr.getBody().toString());
+		else
+			user.setExternalId(userRequestDto.getExternalId());
+		
+		if (userRequestDto.getUserId() != null)
+			user.setUserId(userRequestDto.getUserId());
+		
 		User userSaved = userRepository.save(user);
 		
-		// bind organization to user for not admin users
-		if (!userRequestDto.getRole().equals("admin")) {			
+		// bind organization to user for not admin users role
+		if (userRequestDto.getUserId() == null && !userRequestDto.getRole().equals("admin")) {			
 			UserOrganization userOrganization = UserOrganization.builder()
 					.organizationId(new ObjectId(userRequestDto.getOrganizationId()))
 					.userId(new ObjectId(userSaved.getUserId()))
@@ -112,7 +143,7 @@ public class UserService {
 		}
 				
 		// delete Keycloack user
-		String url = "http://" + securityConfig.getHost() + ":" + securityConfig.getPort() + "/security/realms/" + REALM + "/users/" + user.get().getExternalId();
+		String url = "http://" + securityConfig.getHost() + ":" + securityConfig.getPort() + "/security/realms/" + DEF_REALM + "/users/" + user.get().getExternalId();
 				
 		restTemplate.delete(url);
 		

@@ -6,13 +6,19 @@ import lombok.Data;
 @Data
 @Builder
 public class UserRequestDto {
+	private String userId;
 	private String organizationId;
+	private String externalId;
 	private String username;
 	private String firstname;
 	private String lastname;
 	private String email;
 	private String address;
-	private String password;
+	private String city;	
+	private String country;	
+	private String phone;
+	private String notes;
+	private String language;	
 	private String role;
 	private boolean enabled;	
 }

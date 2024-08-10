@@ -38,6 +38,25 @@ public class User {
 	@NotNull(message = "Email may not be null")
 	@Field("email")
 	private String email;
+
+	@NotNull(message = "Language may not be null")
+	@Field("language")
+	private String language;	
+
+	@Field("address")
+	private String address;	
+	
+	@Field("city")
+	private String city;	
+	
+	@Field("country")
+	private String country;	
+
+	@Field("phone")
+	private String phone;	
+
+	@Field("notes")
+	private String notes;	
 	
 	@NotNull(message = "Role may not be null")
 	@Field("role")
