@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Case;
-import es.uniovi.avib.morphing.projections.backend.organization.dto.UserCaseDto;
 import es.uniovi.avib.morphing.projections.backend.organization.service.CaseService;
 
 @Slf4j
@@ -60,12 +59,12 @@ public class CaseController {
 		caseService.deleteById(caseId);					
 	}
 	
-	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/users/{userId}/aggregate")	
+	/*@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/users/{userId}/aggregate")	
 	public ResponseEntity<UserCaseDto> findByUserAggregate(@PathVariable String userId) {
 		UserCaseDto userCaseDto = caseService.findByUserAggregate(userId);
 										
 		log.debug("findByUserAggregate: found user cases with userId: {}", userId);
 			
 		return new ResponseEntity<UserCaseDto>(userCaseDto, HttpStatus.OK);		
-	}	
+	}*/	
 }

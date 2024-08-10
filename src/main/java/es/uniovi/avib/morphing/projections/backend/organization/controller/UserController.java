@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.uniovi.avib.morphing.projections.backend.organization.domain.User;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.UserCaseDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserRequestDto;
 import es.uniovi.avib.morphing.projections.backend.organization.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,15 @@ public class UserController {
 		return new ResponseEntity<List<User>>(users, HttpStatus.OK);			
 	}
 
+	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/organizations/{organizationId}")
+	public ResponseEntity<List<User>> findAllByOrganizationId(@PathVariable String organizationId) {
+		List<User> users = (List<User>) userService.findAllByOrganizationId(organizationId);
+					
+		log.debug("findAllByOrganizationId: found {} users", users.size());
+		
+		return new ResponseEntity<List<User>>(users, HttpStatus.OK);			
+	}
+	
 	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/{userId}")	
 	public ResponseEntity<User> findById(@PathVariable String userId) {
 		User user = userService.findById(userId);
@@ -67,4 +77,13 @@ public class UserController {
 			
 		return new ResponseEntity<User>(user, HttpStatus.OK);		
 	}
+	
+	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/{userId}/cases")	
+	public ResponseEntity<UserCaseDto> findCasesByUser(@PathVariable String userId) {
+		UserCaseDto userCaseDto = userService.findCasesByUser(userId);
+										
+		log.debug("findByUserAggregate: found user cases with userId: {}", userId);
+			
+		return new ResponseEntity<UserCaseDto>(userCaseDto, HttpStatus.OK);		
+	}		
 }
