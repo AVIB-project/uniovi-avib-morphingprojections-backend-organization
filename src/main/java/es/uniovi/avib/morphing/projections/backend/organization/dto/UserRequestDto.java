@@ -10,8 +10,8 @@ public class UserRequestDto {
 	private String organizationId;
 	private String externalId;
 	private String username;
-	private String firstname;
-	private String lastname;
+	private String firstName;
+	private String lastName;
 	private String email;
 	private String address;
 	private String city;	

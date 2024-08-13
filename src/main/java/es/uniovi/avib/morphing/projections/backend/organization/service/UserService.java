@@ -6,14 +6,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import org.bson.types.ObjectId;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +32,7 @@ import es.uniovi.avib.morphing.projections.backend.organization.dto.Organization
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ProjectDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ResourceDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserCaseDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.UserDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserKeycloakDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserOrganizationDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserRequestDto;
@@ -56,35 +57,165 @@ public class UserService {
 		return (List<User>) userRepository.findAll();		
 	}
 	
-	public List<User> findAllByOrganizationId(String organizationId) {
+	public List<UserDto> findAllByOrganizationId(String organizationId) {
 		log.debug("findAllByOrganizationId: find all users by organization with id {}", organizationId);
+						
+		AggregationOperation aggregationOperationOrganization = Aggregation
+				.stage("""
+						{
+						    $lookup: {
+						        from: "user_organization",
+						        localField: '_id',
+						        foreignField: "user_id",
+						        as: 'organization',
+						        pipeline: [{
+						            "$project": {
+						                "_id": 0,
+										"organization_id": 1
+						            }
+						        }]
+						    }
+						}
+						""");
+		
+		AggregationOperation aggregationOperationUnwindOrganizations = Aggregation
+				.stage("""
+						{
+							$unwind: {
+								"path": "$organization",
+								"preserveNullAndEmptyArrays": true
+							}
+						}																	
+					   """);
+		
+		
+		AggregationOperation aggregationOperationProjectOrganization = Aggregation
+				.stage("""
+						{
+							$project: {
+						        _id: 0,
+						        userId: "$_id",
+						        externalId: 1,
+						        firstName: 1,
+						        lastName: 1,
+						        username: 1,
+						        email: 1,
+						        language: 1,
+						        address: 1,
+						        city: 1,
+						        country: 1,
+						        phone: 1,
+						        notes: 1,
+						        role: 1,
+						        active: 1,
+						        creationDate: 1,
+						        creationBy: 1,
+						        updatedDate: 1,
+						        updatedBy: 1,
+						        organizationId: "$organization.organization_id"
+						    }
+						}																	
+					   """);
+		
+		AggregationOperation aggregationOperationMatchOrganization = Aggregation
+				.match(Criteria.where("organizationId").is(new ObjectId(organizationId)));
+		
+		Aggregation aggregation = Aggregation.newAggregation(
+				aggregationOperationOrganization, 
+				aggregationOperationUnwindOrganizations,
+				aggregationOperationProjectOrganization,
+				aggregationOperationMatchOrganization
+				);
+		
+		List<UserDto> users = mongoTemplate.aggregate(aggregation, "user", UserDto.class).getMappedResults();
+		
+		return users;		
+	}
+	
+	public UserDto findById(String userId) {
+		log.debug("findById: found user with id: {}", userId);
+		
+		//return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 		
 		AggregationOperation aggregationOperationOrganization = Aggregation
 				.stage("""
 						{
-							 $lookup: {
-								from: "user_organization",
-								localField: '_id',
-								foreignField: "user_id",
-								as: 'organizations'
-							}
-						}											
-					   """.replace("$organizationId", organizationId));	
+						    $lookup: {
+						        from: "user_organization",
+						        localField: '_id',
+						        foreignField: "user_id",
+						        as: 'organization',
+						        pipeline: [{
+						            "$project": {
+						                "_id": 0,
+										"organization_id": 1
+						            }
+						        }]
+						    }
+						}
+						""");
 		
-		AggregationOperation aggregationOperationUser = Aggregation
+		AggregationOperation aggregationOperationUnwindOrganizations = Aggregation
 				.stage("""
 						{
-							$match: {
-								$expr: { $gt: [{ $size: "$organizations" }, 0] }
-							 }
+							$unwind: {
+								"path": "$organization",
+								"preserveNullAndEmptyArrays": true
+							}
 						}																	
 					   """);
 		
-		Aggregation aggregation = Aggregation.newAggregation(aggregationOperationOrganization, aggregationOperationUser);
 		
-		List<User> users = mongoTemplate.aggregate(aggregation, "user", User.class).getMappedResults();
+		AggregationOperation aggregationOperationProjectOrganization = Aggregation
+				.stage("""
+						{
+							$project: {
+						        _id: 0,
+						        userId: "$_id",
+						        externalId: 1,
+						        firstName: 1,
+						        lastName: 1,
+						        username: 1,
+						        email: 1,
+						        language: 1,
+						        address: 1,
+						        city: 1,
+						        country: 1,
+						        phone: 1,
+						        notes: 1,
+						        role: 1,
+						        active: 1,
+						        creationDate: 1,
+						        creationBy: 1,
+						        updatedDate: 1,
+						        updatedBy: 1,
+						        organizationId: "$organization.organization_id"
+						    }
+						}																	
+					   """);
 		
-		return users;		
+		AggregationOperation aggregationOperationMatchOrganization = Aggregation
+				.match(Criteria.where("userId").is(new ObjectId(userId)));
+		
+		Aggregation aggregation = Aggregation.newAggregation(
+				aggregationOperationOrganization, 
+				aggregationOperationUnwindOrganizations,
+				aggregationOperationProjectOrganization,
+				aggregationOperationMatchOrganization
+				);
+		
+		List<UserDto> users = mongoTemplate.aggregate(aggregation, "user", UserDto.class).getMappedResults();
+		
+		if (users.size() > 0)
+			return users.get(0);
+		
+		return null;
+	}
+		
+	public User findByEmail(String email) {
+		log.debug("findById: found user with id: {}", email);
+		
+		return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));	
 	}
 	
 	public UserCaseDto findCasesByUser(String userId) {
@@ -280,18 +411,6 @@ public class UserService {
 		return userCaseDto;		
 	}	
 	
-	public User findById(String userId) {
-		log.debug("findById: found user with id: {}", userId);
-		
-		return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));	
-	}
-		
-	public User findByEmail(String email) {
-		log.debug("findById: found user with id: {}", email);
-		
-		return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));	
-	}
-	
 	public User save(UserRequestDto userRequestDto) {
 		log.debug("save: user");
 
@@ -303,8 +422,8 @@ public class UserService {
 			userKeycloakDto = UserKeycloakDto.builder()
 				.username(userRequestDto.getUsername())
 				.password(DEF_PASSWORD)
-				.firstname(userRequestDto.getFirstname())
-				.lastname(userRequestDto.getLastname())
+				.firstName(userRequestDto.getFirstName())
+				.lastName(userRequestDto.getLastName())
 				.email(userRequestDto.getEmail())				
 				.realmRoles(new ArrayList<String>(Arrays.asList(userRequestDto.getRole())))
 				.enabled(true)
@@ -312,8 +431,8 @@ public class UserService {
 		} else {
 			userKeycloakDto = UserKeycloakDto.builder()
 					.username(userRequestDto.getUsername())
-					.firstname(userRequestDto.getFirstname())
-					.lastname(userRequestDto.getLastname())
+					.firstName(userRequestDto.getFirstName())
+					.lastName(userRequestDto.getLastName())
 					.email(userRequestDto.getEmail())				
 					.realmRoles(new ArrayList<String>(Arrays.asList(userRequestDto.getRole())))
 					.enabled(true)
@@ -329,8 +448,8 @@ public class UserService {
 		
 		// save user in system	
 		User user = User.builder()
-				.firstName(userRequestDto.getFirstname())
-				.lastName(userRequestDto.getLastname())
+				.firstName(userRequestDto.getFirstName())
+				.lastName(userRequestDto.getLastName())
 				.username(userRequestDto.getUsername())
 				.email(userRequestDto.getEmail())
 				.language(userRequestDto.getLanguage())

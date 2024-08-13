@@ -20,15 +20,15 @@ public class User {
 	private String userId;
 
 	@NotNull(message = "Name may not be null")
-	@Field("external_id")
+	@Field("externalId")
 	private String externalId;
 	
-	@NotNull(message = "Firstname may not be null")
-	@Field("firstname")
+	@NotNull(message = "First name may not be null")
+	@Field("firstName")
 	private String firstName;
 	
-	@NotNull(message = "Lastname may not be null")
-	@Field("lastname")
+	@NotNull(message = "Last name may not be null")
+	@Field("lastName")
 	private String lastName;	
 	
 	@NotNull(message = "Username may not be null")
