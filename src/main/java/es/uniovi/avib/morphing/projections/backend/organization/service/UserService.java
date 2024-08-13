@@ -509,7 +509,7 @@ public class UserService {
 		userRepository.delete(user.get());
 		
 		// delete user system organization binds
-		List<UserOrganization> userOrganizations = userOrganizationRepository.findByUserId(user.get().getUserId());
+		List<UserOrganization> userOrganizations = userOrganizationRepository.findByUserId(new ObjectId(user.get().getUserId()));
 		userOrganizationRepository.deleteAll(userOrganizations);
 	}
 }
