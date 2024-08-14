@@ -3,6 +3,7 @@ package es.uniovi.avib.morphing.projections.backend.organization.domain;
 import java.util.Date;
 import java.util.List;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -25,6 +26,10 @@ public class Project {
 	
 	@Field("description")
 	private String description;
+	
+	@NotNull(message = "Organization Id may not be null")
+	@Field("organization_id")
+	private ObjectId organizationId;
 	
 	@Field("cases")
 	List<Case> cases;

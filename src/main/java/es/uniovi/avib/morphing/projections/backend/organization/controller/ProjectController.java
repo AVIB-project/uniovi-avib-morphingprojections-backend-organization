@@ -33,6 +33,15 @@ public class ProjectController {
 		return new ResponseEntity<List<Project>>(projects, HttpStatus.OK);			
 	}
 
+	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/organizations/{organizationId}")
+	public ResponseEntity<List<Project>> findByOrganizationId(@PathVariable String organizationId) {
+		List<Project> projects = (List<Project>) projectService.findByOrganizationId(organizationId);
+					
+		log.debug("findAll: found {} organizations", projects.size());
+		
+		return new ResponseEntity<List<Project>>(projects, HttpStatus.OK);			
+	}
+	
 	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/{projectId}")	
 	public ResponseEntity<Project> findById(@PathVariable String projectId) {
 		Project project = projectService.findById(projectId);
