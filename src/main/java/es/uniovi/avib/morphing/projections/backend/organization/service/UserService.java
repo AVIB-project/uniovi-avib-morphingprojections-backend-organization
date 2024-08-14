@@ -517,4 +517,21 @@ public class UserService {
 		List<UserOrganization> userOrganizations = userOrganizationRepository.findByUserId(new ObjectId(user.get().getUserId()));
 		userOrganizationRepository.deleteAll(userOrganizations);
 	}
+
+	public void resetPassword(String userId, String password) throws Exception {
+		log.debug("resetPassword");
+
+		// recover system user
+		Optional<User> user = userRepository.findById(userId);
+		
+		if (user.isEmpty()) {
+			throw new Exception("User not exist");
+		}
+						
+		// reset password Keycloack user
+		String url = "http://" + securityConfig.getHost() + ":" + securityConfig.getPort() + "/security/realms/" + DEF_REALM + "/users/" + user.get().getExternalId() + "/resetPassword";
+				
+		restTemplate.postForEntity(url, password, Void.class);
+		
+	}
 }

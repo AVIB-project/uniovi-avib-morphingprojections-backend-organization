@@ -86,5 +86,12 @@ public class UserController {
 		log.debug("findByUserAggregate: found user cases with userId: {}", userId);
 			
 		return new ResponseEntity<UserCaseDto>(userCaseDto, HttpStatus.OK);		
+	}
+	
+	@RequestMapping(method = { RequestMethod.POST }, produces = "application/json", value = "/{userId}/resetPassword")	
+	public void resetPassword(@PathVariable String userId, @RequestBody String password) throws Exception {
+		userService.resetPassword(userId, password);
+										
+		log.debug("resetPassword: reset password user with userId: {}", userId);		
 	}		
 }
