@@ -47,7 +47,6 @@ public class UserService {
 	private final SecurityConfig securityConfig;
 	private final MongoTemplate mongoTemplate;
 
-	//private final String ADMIN_ID = "66a90828bfb5b24be6ab8210";
 	private final String ADMIN_ID = "ADMIN";
 	private final String DEF_REALM = "avib";
 	private final String DEF_PASSWORD = "password";
