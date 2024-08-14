@@ -47,7 +47,8 @@ public class UserService {
 	private final SecurityConfig securityConfig;
 	private final MongoTemplate mongoTemplate;
 
-	private final String ADMIN_ID = "66a90828bfb5b24be6ab8210";
+	//private final String ADMIN_ID = "66a90828bfb5b24be6ab8210";
+	private final String ADMIN_ID = "ADMIN";
 	private final String DEF_REALM = "avib";
 	private final String DEF_PASSWORD = "password";
 	
@@ -221,6 +222,9 @@ public class UserService {
 	public UserCaseDto findCasesByUser(String userId) {
 		log.debug("findCasesByUser: find cases from user id: {}", userId);
 						
+		// recover user from id
+		UserDto userDto = findById(userId);
+		
 		AggregationOperation aggregationOperationUser01 = Aggregation
 				.stage("""
 						{
@@ -312,7 +316,8 @@ public class UserService {
 		Aggregation aggregation;
 		UserCaseDto userCaseDto = new UserCaseDto();
 		
-		if (userId.equals(ADMIN_ID)) {
+		//if (userId.equals(ADMIN_ID)) {
+		if (userDto.getRole().equals(ADMIN_ID)) {
 			aggregation = Aggregation.newAggregation(aggregationOperationAdmin01);
 			
 			List<OrganizationDto> organizations = mongoTemplate.aggregate(aggregation, "organization", OrganizationDto.class).getMappedResults();
