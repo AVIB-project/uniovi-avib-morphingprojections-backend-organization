@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class CaseDto {
-	private String id;
+	private String caseId;
 	private String name;
 	private String description;
 	@Builder.Default

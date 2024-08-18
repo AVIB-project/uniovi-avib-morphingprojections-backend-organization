@@ -8,10 +8,11 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class ProjectDto {
-	private String projectId;	
+public class CaseAdminDto {
+	private String id;
 	private String name;
 	private String description;
 	@Builder.Default
-	private List<CaseDto> cases = new ArrayList<CaseDto>();
+	private List<ResourceDto> resources = new ArrayList<ResourceDto>();
 }
+	

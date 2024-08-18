@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class OrganizationDto {
-	private String id;
+	private String organizationId;
 	private String name;
 	private String description;
 	@Builder.Default

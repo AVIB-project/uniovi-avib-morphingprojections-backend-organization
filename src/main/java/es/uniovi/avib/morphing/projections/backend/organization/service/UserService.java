@@ -27,8 +27,11 @@ import es.uniovi.avib.morphing.projections.backend.organization.domain.Project;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Resource;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.User;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.UserOrganization;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseAdminDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.OrganizationAdminDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.OrganizationDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.ProjectAminDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ProjectDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ResourceDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserCaseDto;
@@ -134,9 +137,7 @@ public class UserService {
 	
 	public UserDto findById(String userId) {
 		log.debug("findById: found user with id: {}", userId);
-		
-		//return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-		
+				
 		AggregationOperation aggregationOperationOrganization = Aggregation
 				.stage("""
 						{
@@ -311,34 +312,33 @@ public class UserService {
 							}								 
 						}																	
 					   """);
-		
+				
 		Aggregation aggregation;
 		UserCaseDto userCaseDto = new UserCaseDto();
 		
-		//if (userId.equals(ADMIN_ID)) {
 		if (userDto.getRole().equals(ADMIN_ID)) {
 			aggregation = Aggregation.newAggregation(aggregationOperationAdmin01);
 			
-			List<OrganizationDto> organizations = mongoTemplate.aggregate(aggregation, "organization", OrganizationDto.class).getMappedResults();
+			List<OrganizationAdminDto> organizations = mongoTemplate.aggregate(aggregation, "organization", OrganizationAdminDto.class).getMappedResults();
 			
 			// create User Cases from organization configuration by user
-			for (OrganizationDto organization : organizations) {
+			for (OrganizationAdminDto organization : organizations) {
 				OrganizationDto organizationDto = OrganizationDto.builder()
-						.id(organization.getId())
+						.organizationId(organization.getId())
 						.name(organization.getName())
 						.description(organization.getDescription())
 						.build();
 												
-				for (ProjectDto project : organization.getProjects()) {
+				for (ProjectAminDto project : organization.getProjects()) {
 					ProjectDto projectDto = ProjectDto.builder()
-							.id(project.getId())
+							.projectId(project.getId())
 							.name(project.getName())
 							.description(project.getDescription())
 							.build();
 									
-					for (CaseDto cs : project.getCases()) {
+					for (CaseAdminDto cs : project.getCases()) {
 						CaseDto caseDto = CaseDto.builder()
-								.id(cs.getId())
+								.caseId(cs.getId())
 								.name(cs.getName())
 								.description(cs.getDescription())
 								.build();
@@ -372,21 +372,21 @@ public class UserService {
 			for (UserOrganizationDto userOrganizationDto : userOrganizationDtos) {
 				for (Organization organization : userOrganizationDto.getOrganizations()) {
 					OrganizationDto organizationDto = OrganizationDto.builder()
-							.id(organization.getOrganizationId())
+							.organizationId(organization.getOrganizationId())
 							.name(organization.getName())
 							.description(organization.getDescription())
 							.build();
 													
 					for (Project project : organization.getProjects()) {
 						ProjectDto projectDto = ProjectDto.builder()
-								.id(project.getProjectId())
+								.projectId(project.getProjectId())
 								.name(project.getName())
 								.description(project.getDescription())
 								.build();
 										
 						for (Case cs : project.getCases()) {
 							CaseDto caseDto = CaseDto.builder()
-									.id(cs.getCaseId())
+									.caseId(cs.getCaseId())
 									.name(cs.getName())
 									.description(cs.getDescription())
 									.build();
