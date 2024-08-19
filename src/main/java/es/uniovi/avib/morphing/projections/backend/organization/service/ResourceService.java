@@ -32,10 +32,12 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class ResourceService {
-	private final RestTemplate restTemplate;
 	private final StorageConfig storageConfig;	
-	private final ResourceRepository resourceRepository;
+	
+	private final RestTemplate restTemplate;
 	private final MongoTemplate mongoTemplate;
+	
+	private final ResourceRepository resourceRepository;
 	
 	public List<Resource> findAll() {		
 		log.debug("findAll: found all resources");
@@ -47,18 +49,6 @@ public class ResourceService {
 		log.debug("findById: found resource with id: {}", resourceId);
 		
 		return resourceRepository.findById(resourceId).orElseThrow(() -> new RuntimeException("Resource not found"));	
-	}
-		
-	public Resource save(Resource resource) {
-		log.debug("save: save resource");
-		
-		return resourceRepository.save(resource);
-	}
-	
-	public void deleteById(String resourceId) {
-		log.debug("deleteById: delete resource with id: {}", resourceId);
-		
-		resourceRepository.deleteById(resourceId);
 	}
 	
 	public List<ResourceDto> findByCaseId(String caseId) {
@@ -123,6 +113,18 @@ public class ResourceService {
 			return resources.get(0);
 		
 		return null;
+	}
+	
+	public Resource save(Resource resource) {
+		log.debug("save: save resource");
+		
+		return resourceRepository.save(resource);
+	}
+	
+	public void deleteById(String resourceId) {
+		log.debug("deleteById: delete resource with id: {}", resourceId);
+		
+		resourceRepository.deleteById(resourceId);
 	}
 	
     public Object uploadResources(String organizationId, String projectId, String caseId, String type, String description, MultipartFile[] files) {

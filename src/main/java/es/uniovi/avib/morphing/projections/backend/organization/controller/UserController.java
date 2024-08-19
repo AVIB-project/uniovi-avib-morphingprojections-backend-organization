@@ -36,15 +36,6 @@ public class UserController {
 		return new ResponseEntity<List<User>>(users, HttpStatus.OK);			
 	}
 
-	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/organizations/{organizationId}")
-	public ResponseEntity<List<UserDto>> findAllByOrganizationId(@PathVariable String organizationId) {
-		List<UserDto> users = (List<UserDto>) userService.findAllByOrganizationId(organizationId);
-					
-		log.debug("findAllByOrganizationId: found {} users", users.size());
-		
-		return new ResponseEntity<List<UserDto>>(users, HttpStatus.OK);			
-	}
-	
 	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/{userId}")	
 	public ResponseEntity<UserDto> findById(@PathVariable String userId) {
 		UserDto user = userService.findById(userId);
@@ -54,20 +45,13 @@ public class UserController {
 		return new ResponseEntity<UserDto>(user, HttpStatus.OK);		
 	}
 	
-	@RequestMapping(method = { RequestMethod.POST }, produces = "application/json")	
-	public ResponseEntity<User> save(@RequestBody UserRequestDto userRequestDto) {		
-		User userSaved = userService.save(userRequestDto);
-
-		log.debug("save: create/update user with userId: {} from Manager Service", userSaved.getUserId());
-			
-		return new ResponseEntity<User>(userSaved, HttpStatus.OK);			
-	}
-
-	@RequestMapping(method = { RequestMethod.DELETE },value = "/{userId}")	
-	public void deleteById(@PathVariable String userId) throws Exception {
-		log.debug("deleteById: remove user with userId: {}", userId);
-			
-		userService.deleteById(userId);					
+	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/organizations/{organizationId}")
+	public ResponseEntity<List<UserDto>> findAllByOrganizationId(@PathVariable String organizationId) {
+		List<UserDto> users = (List<UserDto>) userService.findAllByOrganizationId(organizationId);
+					
+		log.debug("findAllByOrganizationId: found {} users", users.size());
+		
+		return new ResponseEntity<List<UserDto>>(users, HttpStatus.OK);			
 	}
 	
 	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/{email}/email")	
@@ -88,6 +72,22 @@ public class UserController {
 		return new ResponseEntity<UserCaseDto>(userCaseDto, HttpStatus.OK);		
 	}
 	
+	@RequestMapping(method = { RequestMethod.POST }, produces = "application/json")	
+	public ResponseEntity<User> save(@RequestBody UserRequestDto userRequestDto) {		
+		User userSaved = userService.save(userRequestDto);
+
+		log.debug("save: create/update user with userId: {} from Manager Service", userSaved.getUserId());
+			
+		return new ResponseEntity<User>(userSaved, HttpStatus.OK);			
+	}
+
+	@RequestMapping(method = { RequestMethod.DELETE },value = "/{userId}")	
+	public void deleteById(@PathVariable String userId) throws Exception {
+		log.debug("deleteById: remove user with userId: {}", userId);
+			
+		userService.deleteById(userId);					
+	}
+			
 	@RequestMapping(method = { RequestMethod.POST }, produces = "application/json", value = "/{userId}/resetPassword")	
 	public void resetPassword(@PathVariable String userId, @RequestBody String password) throws Exception {
 		userService.resetPassword(userId, password);

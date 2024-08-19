@@ -44,11 +44,13 @@ import es.uniovi.avib.morphing.projections.backend.organization.dto.UserRequestD
 @Service
 @RequiredArgsConstructor
 public class UserService {
-	private final RestTemplate restTemplate;
-	private final UserRepository userRepository;
-	private final UserOrganizationRepository userOrganizationRepository;
 	private final SecurityConfig securityConfig;
+	
+	private final RestTemplate restTemplate;
 	private final MongoTemplate mongoTemplate;
+	
+	private final UserRepository userRepository;
+	private final UserOrganizationRepository userOrganizationRepository;	
 
 	private final String ADMIN_ID = "ADMIN";
 	private final String DEF_REALM = "avib";
@@ -58,81 +60,6 @@ public class UserService {
 		log.debug("findAll: find all users");
 		
 		return (List<User>) userRepository.findAll();		
-	}
-	
-	public List<UserDto> findAllByOrganizationId(String organizationId) {
-		log.debug("findAllByOrganizationId: find all users by organization with id {}", organizationId);
-						
-		AggregationOperation aggregationOperationOrganization = Aggregation
-				.stage("""
-						{
-						    $lookup: {
-						        from: "user_organization",
-						        localField: '_id',
-						        foreignField: "user_id",
-						        as: 'organization',
-						        pipeline: [{
-						            "$project": {
-						                "_id": 0,
-										"organization_id": 1
-						            }
-						        }]
-						    }
-						}
-						""");
-		
-		AggregationOperation aggregationOperationUnwindOrganizations = Aggregation
-				.stage("""
-						{
-							$unwind: {
-								"path": "$organization",
-								"preserveNullAndEmptyArrays": true
-							}
-						}																	
-					   """);
-		
-		
-		AggregationOperation aggregationOperationProjectOrganization = Aggregation
-				.stage("""
-						{
-							$project: {
-						        _id: 0,
-						        userId: "$_id",
-						        externalId: 1,
-						        firstName: 1,
-						        lastName: 1,
-						        username: 1,
-						        email: 1,
-						        language: 1,
-						        address: 1,
-						        city: 1,
-						        country: 1,
-						        phone: 1,
-						        notes: 1,
-						        role: 1,
-						        active: 1,
-						        creationDate: 1,
-						        creationBy: 1,
-						        updatedDate: 1,
-						        updatedBy: 1,
-						        organizationId: "$organization.organization_id"
-						    }
-						}																	
-					   """);
-		
-		AggregationOperation aggregationOperationMatchOrganization = Aggregation
-				.match(Criteria.where("organizationId").is(new ObjectId(organizationId)));
-		
-		Aggregation aggregation = Aggregation.newAggregation(
-				aggregationOperationOrganization, 
-				aggregationOperationUnwindOrganizations,
-				aggregationOperationProjectOrganization,
-				aggregationOperationMatchOrganization
-				);
-		
-		List<UserDto> users = mongoTemplate.aggregate(aggregation, "user", UserDto.class).getMappedResults();
-		
-		return users;		
 	}
 	
 	public UserDto findById(String userId) {
@@ -212,7 +139,82 @@ public class UserService {
 		
 		return null;
 	}
+	
+	public List<UserDto> findAllByOrganizationId(String organizationId) {
+		log.debug("findAllByOrganizationId: find all users by organization with id {}", organizationId);
+						
+		AggregationOperation aggregationOperationOrganization = Aggregation
+				.stage("""
+						{
+						    $lookup: {
+						        from: "user_organization",
+						        localField: '_id',
+						        foreignField: "user_id",
+						        as: 'organization',
+						        pipeline: [{
+						            "$project": {
+						                "_id": 0,
+										"organization_id": 1
+						            }
+						        }]
+						    }
+						}
+						""");
 		
+		AggregationOperation aggregationOperationUnwindOrganizations = Aggregation
+				.stage("""
+						{
+							$unwind: {
+								"path": "$organization",
+								"preserveNullAndEmptyArrays": true
+							}
+						}																	
+					   """);
+		
+		
+		AggregationOperation aggregationOperationProjectOrganization = Aggregation
+				.stage("""
+						{
+							$project: {
+						        _id: 0,
+						        userId: "$_id",
+						        externalId: 1,
+						        firstName: 1,
+						        lastName: 1,
+						        username: 1,
+						        email: 1,
+						        language: 1,
+						        address: 1,
+						        city: 1,
+						        country: 1,
+						        phone: 1,
+						        notes: 1,
+						        role: 1,
+						        active: 1,
+						        creationDate: 1,
+						        creationBy: 1,
+						        updatedDate: 1,
+						        updatedBy: 1,
+						        organizationId: "$organization.organization_id"
+						    }
+						}																	
+					   """);
+		
+		AggregationOperation aggregationOperationMatchOrganization = Aggregation
+				.match(Criteria.where("organizationId").is(new ObjectId(organizationId)));
+		
+		Aggregation aggregation = Aggregation.newAggregation(
+				aggregationOperationOrganization, 
+				aggregationOperationUnwindOrganizations,
+				aggregationOperationProjectOrganization,
+				aggregationOperationMatchOrganization
+				);
+		
+		List<UserDto> users = mongoTemplate.aggregate(aggregation, "user", UserDto.class).getMappedResults();
+		
+		return users;		
+	}
+	
 	public User findByEmail(String email) {
 		log.debug("findById: found user with id: {}", email);
 		

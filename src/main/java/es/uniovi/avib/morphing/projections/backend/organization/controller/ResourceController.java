@@ -49,6 +49,15 @@ public class ResourceController {
 		return new ResponseEntity<Resource>(resource, HttpStatus.OK);		
 	}
 	
+	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/cases/{caseId}")	
+	public ResponseEntity<List<ResourceDto>> findByCase(@PathVariable String caseId) {
+		List<ResourceDto> resourcesDto = resourceService.findByCaseId(caseId);
+										
+		log.debug("findById: find resources with caseId: {}", caseId);
+			
+		return new ResponseEntity<List<ResourceDto>>(resourcesDto, HttpStatus.OK);		
+	}
+	
 	@RequestMapping(method = { RequestMethod.POST }, produces = "application/json")	
 	public ResponseEntity<Resource> save(@RequestBody Resource resource) {		
 		Resource resourceSaved = resourceService.save(resource);
@@ -64,16 +73,7 @@ public class ResourceController {
 			
 		resourceService.deleteById(resourceId);					
 	}
-	
-	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/cases/{caseId}")	
-	public ResponseEntity<List<ResourceDto>> findByCase(@PathVariable String caseId) {
-		List<ResourceDto> resourcesDto = resourceService.findByCaseId(caseId);
-										
-		log.debug("findById: find resources with caseId: {}", caseId);
-			
-		return new ResponseEntity<List<ResourceDto>>(resourcesDto, HttpStatus.OK);		
-	}
-	
+		
     @RequestMapping(method = { RequestMethod.POST }, consumes = { MediaType.MULTIPART_FORM_DATA_VALUE}, produces = "application/json", value = "/organizations/{organizationId}/projects/{projectId}/cases/{caseId}")
     public String uploadResources(
     		@PathVariable String organizationId,

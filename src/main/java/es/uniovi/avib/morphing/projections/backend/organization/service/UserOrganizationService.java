@@ -16,7 +16,7 @@ import es.uniovi.avib.morphing.projections.backend.organization.domain.UserOrgan
 public class UserOrganizationService {
 	private final UserOrganizationRepository userOrganizationRepository;
 	
-	public List<UserOrganization> findAll() {		
+	public List<UserOrganization> findAll() {
 		log.debug("findAll: found all users");
 		
 		return (List<UserOrganization>) userOrganizationRepository.findAll();		
