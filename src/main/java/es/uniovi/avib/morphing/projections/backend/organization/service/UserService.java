@@ -318,7 +318,7 @@ public class UserService {
 		Aggregation aggregation;
 		UserCaseDto userCaseDto = new UserCaseDto();
 		
-		if (userDto.getRole().equals(ADMIN_ID)) {
+		if (userDto!= null && userDto.getRole().equals(ADMIN_ID)) {
 			aggregation = Aggregation.newAggregation(aggregationOperationAdmin01);
 			
 			List<OrganizationAdminDto> organizations = mongoTemplate.aggregate(aggregation, "organization", OrganizationAdminDto.class).getMappedResults();
