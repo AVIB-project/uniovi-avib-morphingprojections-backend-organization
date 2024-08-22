@@ -34,7 +34,11 @@ spring:
 #    database: configuration
 #    username: root
 #    password: password
-  
+
+annotation:
+  host: localhost
+  port: 8081
+    
 storage:
   host: localhost
   port: 8083
@@ -71,7 +75,11 @@ spring:
     multipart:
       max-file-size: 500MB
       max-request-size: 500MB      
-        
+
+annotation:
+  host: uniovi-avib-morphingprojections-backend-annotation
+  port: 8081
+          
 storage:        
   host: uniovi-avib-morphingprojections-backend-storage
   port: 8083

@@ -11,6 +11,6 @@ public class SecurityConfig {
     @Value("${security.host:localhost}")
     String host;
 
-    @Value("${security.port:8084}")
+    @Value("${security.port:8085}")
     String port;   
 }
