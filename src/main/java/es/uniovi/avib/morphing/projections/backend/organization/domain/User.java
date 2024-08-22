@@ -2,7 +2,11 @@ package es.uniovi.avib.morphing.projections.backend.organization.domain;
 
 import java.util.Date;
 
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -65,18 +69,22 @@ public class User {
 	@NotNull(message = "Active may not be null")
 	@Field("active")
 	private boolean active;	
+		
+	@NotNull(message = "Creation by may not be null")
+	@Field("creation_by")
+	@CreatedBy	
+	private String creationBy;
 	
 	@NotNull(message = "Creation Date may not be null")
 	@Field("creation_date")
+	@CreatedDate	
 	private Date creationDate;	
-	
-	@NotNull(message = "Creation by may not be null")
-	@Field("creation_by")
-	private String creationBy;	
+		
+	@Field("updated_by")
+	@LastModifiedBy
+	private String updatedBy;
 	
 	@Field("updated_date")
+	@LastModifiedDate	
 	private Date updatedDate;	
-	
-	@Field("updated_by")
-	private String updatedBy;	
 }

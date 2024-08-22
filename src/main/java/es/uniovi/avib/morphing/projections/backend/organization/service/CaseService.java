@@ -8,12 +8,14 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import es.uniovi.avib.morphing.projections.backend.organization.repository.CaseRepository;
 import es.uniovi.avib.morphing.projections.backend.organization.repository.ResourceRepository;
+import es.uniovi.avib.morphing.projections.backend.organization.configuration.AnnotationConfig;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Case;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Organization;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Project;
@@ -35,12 +37,14 @@ import es.uniovi.avib.morphing.projections.backend.organization.dto.UserOrganiza
 @RequiredArgsConstructor
 public class CaseService {
 	private final CaseRepository caseRepository;
+	private final AnnotationConfig annotationConfig;	
 	private final ResourceRepository resourceRepository;
 
 	private final UserService userService;
 	private final ResourceService resourceService;
 	
 	private final MongoTemplate mongoTemplate;
+	private final RestTemplate restTemplate;
 	
 	private final String ADMIN_ID = "ADMIN";
 	
@@ -326,7 +330,12 @@ public class CaseService {
 	
 	public void deleteById(String caseId) {
 		log.debug("deleteById: delete case with id: {}", caseId);
-			
+
+		// delete all annotations from case				
+		String url = "http://" + annotationConfig.getHost() + ":" + annotationConfig.getPort() + "/annotations/cases/" + caseId;
+					  
+		restTemplate.delete(url);
+		
 		// get all resources from case
 		List<Resource> resources = resourceRepository.findByCaseId(new ObjectId(caseId));
 		
