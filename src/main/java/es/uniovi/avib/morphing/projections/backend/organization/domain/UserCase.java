@@ -2,6 +2,7 @@ package es.uniovi.avib.morphing.projections.backend.organization.domain;
 
 import java.util.Date;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -20,11 +21,11 @@ public class UserCase {
 	
 	@NotNull(message = "Case Id may not be null")
 	@Field("case_id")
-	private String caseId;
+	private ObjectId caseId;
 	
 	@NotNull(message = "User Id may not be null")
 	@Field("user_id")
-	private String userId;
+	private ObjectId userId;
 		
 	@NotNull(message = "Creation Date may not be null")
 	@Field("creation_date")

@@ -45,6 +45,15 @@ public class UserController {
 		return new ResponseEntity<UserDto>(user, HttpStatus.OK);		
 	}
 	
+	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/{externalId}/external")	
+	public ResponseEntity<UserDto> findByExternalId(@PathVariable String externalId) {
+		UserDto user = userService.findByExternalId(externalId);
+										
+		log.debug("findByExternalId: found user with externalId: {}", externalId);
+			
+		return new ResponseEntity<UserDto>(user, HttpStatus.OK);		
+	}
+	
 	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/organizations/{organizationId}")
 	public ResponseEntity<List<UserDto>> findAllByOrganizationId(@PathVariable String organizationId) {
 		List<UserDto> users = (List<UserDto>) userService.findAllByOrganizationId(organizationId);
