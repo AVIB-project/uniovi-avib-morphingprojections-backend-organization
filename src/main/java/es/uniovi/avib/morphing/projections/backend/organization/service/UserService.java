@@ -561,8 +561,8 @@ public class UserService {
 		// bind organization to user for not admin users role
 		if (userRequestDto.getUserId() == null && !userRequestDto.getRole().equals("admin")) {			
 			UserOrganization userOrganization = UserOrganization.builder()
-					.organizationId(new ObjectId(userRequestDto.getOrganizationId()))
-					.userId(new ObjectId(userSaved.getUserId()))
+					.organizationId(userRequestDto.getOrganizationId())
+					.userId(userSaved.getUserId())
 					.creationDate(new Date())
 					.creationBy("Administrator")
 			.build();

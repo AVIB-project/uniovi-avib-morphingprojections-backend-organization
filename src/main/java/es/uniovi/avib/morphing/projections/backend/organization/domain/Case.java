@@ -3,7 +3,6 @@ package es.uniovi.avib.morphing.projections.backend.organization.domain;
 import java.util.Date;
 import java.util.List;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -11,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import jakarta.validation.constraints.NotNull;
 
@@ -25,8 +25,8 @@ public class Case {
 	private String caseId;
 
 	@NotNull(message = "Project Id may not be null")
-	@Field("project_id")
-	private ObjectId projectId;
+	@Field(name = "project_id", targetType = FieldType.OBJECT_ID)
+	private String projectId;
 	
 	@NotNull(message = "Name may not be null")
 	@Field("name")

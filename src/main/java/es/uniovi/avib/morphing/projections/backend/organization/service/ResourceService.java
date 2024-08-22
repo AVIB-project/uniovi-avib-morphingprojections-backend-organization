@@ -149,7 +149,7 @@ public class ResourceService {
 				resource = Resource.builder()
 					.bucket(organizationId)
 					.file(projectId + "/" + caseId + "/" + file.getOriginalFilename())
-					.caseId(new ObjectId(caseId))
+					.caseId(caseId)
 					.type(type)
 					.description(description)
 					.creationBy("Administrator")
