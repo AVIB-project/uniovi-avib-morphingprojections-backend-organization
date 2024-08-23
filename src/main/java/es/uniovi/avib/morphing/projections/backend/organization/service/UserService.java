@@ -502,7 +502,7 @@ public class UserService {
 		String url = "http://" + securityConfig.getHost() + ":" + securityConfig.getPort() + "/security/realms/" + DEF_REALM + "/users";
 
 		UserKeycloakDto userKeycloakDto = null;
-		if (userRequestDto.getExternalId() == null) {			
+		if (userRequestDto.getExternalId().isEmpty()) {			
 			userKeycloakDto = UserKeycloakDto.builder()
 				.username(userRequestDto.getUsername())
 				.password(DEF_PASSWORD)
@@ -524,7 +524,7 @@ public class UserService {
 		}
 		
 		ResponseEntity<String> responseEntityStr = null;
-		if (userRequestDto.getExternalId() == null)
+		if (userRequestDto.getExternalId().isEmpty())
 			responseEntityStr = restTemplate.postForEntity(url, userKeycloakDto, String.class);
 		else {
 			restTemplate.put(url + "/" + userRequestDto.getExternalId(), userKeycloakDto);
