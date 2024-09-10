@@ -56,6 +56,18 @@ public class CaseService {
 	
 	public CaseProjectDto findById(String caseId) {
 		log.debug("findById: found case with id: {}", caseId);		
+
+		AggregationOperation aggregationOperationImage = Aggregation
+				.stage("""
+						{
+						    $lookup: {
+								from: 'image',
+								localField: 'image_id',
+								foreignField: '_id',
+								as: 'image'
+						    }
+						}
+						""");
 		
 		AggregationOperation aggregationOperationProject = Aggregation
 				.stage("""
@@ -86,7 +98,8 @@ public class CaseService {
 						        _id: 0,
 						        caseId: "$_id",
 						        projectId: "$project._id",
-						        organizationId: "$project.organization_id",						        
+						        organizationId: "$project.organization_id",
+						        imageId: "$image._id",
 						        name: 1,
 						        description: 1,
 						        type: 1,
@@ -102,6 +115,7 @@ public class CaseService {
 				.match(Criteria.where("_id").is(new ObjectId(caseId)));
 		
 		Aggregation aggregation = Aggregation.newAggregation(
+				aggregationOperationImage,
 				aggregationOperationProject, 
 				aggregationOperationUnwindProject,
 				aggregationOperationMatchCase,
@@ -134,6 +148,18 @@ public class CaseService {
 		
 		
 		AggregationOperation aggregationOperationUser02 = Aggregation
+				.stage("""
+						{						 						
+						 	$lookup: {
+							  from: 'image',
+							  localField: 'organization_id',
+							  foreignField: 'organization_id',
+							  as: 'image'
+							}
+						}
+					   """);
+		
+		AggregationOperation aggregationOperationUser03 = Aggregation
 				.stage("""
 						{
 							 $lookup: {
@@ -190,8 +216,20 @@ public class CaseService {
 		
 		AggregationOperation aggregationOperationAdmin02 = Aggregation
 				.stage("""
-						{
-						 $lookup: {
+						{						 						
+						 	$lookup: {
+							  from: 'image',
+							  localField: '_id',
+							  foreignField: 'organization_id',
+							  as: 'image'
+							}
+						}
+					   """);
+
+		AggregationOperation aggregationOperationAdmin03 = Aggregation
+				.stage("""
+						 {						 						
+						 	$lookup: {
 							  from: 'project',
 							  localField: '_id',
 							  foreignField: 'organization_id',
@@ -224,7 +262,7 @@ public class CaseService {
 		UserCaseDto userCaseDto = new UserCaseDto();
 		
 		if (userDto.getRole().equals(ADMIN_ID)) {
-			aggregation = Aggregation.newAggregation(aggregationOperationAdmin01, aggregationOperationAdmin02);
+			aggregation = Aggregation.newAggregation(aggregationOperationAdmin01, aggregationOperationAdmin02, aggregationOperationAdmin03);
 			
 			List<OrganizationAdminDto> organizations = mongoTemplate.aggregate(aggregation, "organization", OrganizationAdminDto.class).getMappedResults();
 			
@@ -247,6 +285,7 @@ public class CaseService {
 						CaseDto caseDto = CaseDto.builder()
 								.caseId(cs.getId())
 								.name(cs.getName())
+								.image(organization.getImage().get(0))
 								.description(cs.getDescription())
 								.build();
 						
@@ -271,7 +310,7 @@ public class CaseService {
 			}			
 		}
 		else {
-			aggregation = Aggregation.newAggregation(aggregationOperationUser01, aggregationOperationUser02);
+			aggregation = Aggregation.newAggregation(aggregationOperationUser01, aggregationOperationUser02, aggregationOperationUser03);
 			
 			List<UserOrganizationDto> userOrganizationDtos = mongoTemplate.aggregate(aggregation, "user_organization", UserOrganizationDto.class).getMappedResults();
 			
@@ -296,6 +335,7 @@ public class CaseService {
 									.caseId(cs.getCaseId())
 									.name(cs.getName())
 									.description(cs.getDescription())
+									.image(userOrganizationDto.getImage().get(0))
 									.build();
 							
 							for (Resource resource : cs.getResources()) {

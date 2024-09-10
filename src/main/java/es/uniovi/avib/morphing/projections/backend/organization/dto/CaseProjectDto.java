@@ -11,6 +11,7 @@ public class CaseProjectDto {
 	private String caseId;
 	private String projectId;
 	private String organizationId;
+	private String imageId;
 	private String name;
 	private String description;	
 	private String type;

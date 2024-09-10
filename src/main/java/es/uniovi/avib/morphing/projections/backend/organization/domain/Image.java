@@ -1,7 +1,6 @@
 package es.uniovi.avib.morphing.projections.backend.organization.domain;
 
 import java.util.Date;
-import java.util.List;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -14,55 +13,52 @@ import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import jakarta.validation.constraints.NotNull;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@Document(collection = "case")
-public class Case {
+@Builder
+@Document(collection = "image")
+public class Image {
 	@Id	
-	private String caseId;
-
-	@NotNull(message = "Project Id may not be null")
-	@Field(name = "project_id", targetType = FieldType.OBJECT_ID)
-	private String projectId;
-
-	@NotNull(message = "Image Id may not be null")
-	@Field(name = "image_id", targetType = FieldType.OBJECT_ID)
 	private String imageId;
-	
+				
+	@NotNull(message = "Organization Id may not be null")
+	@Field(name = "organization_id", targetType = FieldType.OBJECT_ID)	
+	private String organizationId;
+
 	@NotNull(message = "Name may not be null")
 	@Field("name")
 	private String name;
 	
 	@Field("description")
 	private String description;
+		
+	@NotNull(message = "Image may not be null")
+	@Field("image")
+	private String image;
 	
-	@Field("type")
-	private String type;
-	
-	@Field("resources")
-	List<Resource> resources;
-	
-	@Field("user_cases")
-	List<UserCase> userCases;
+	@NotNull(message = "Version may not be null")
+	@Field("version")
+	private String version;
 	
 	@NotNull(message = "Creation by may not be null")
 	@Field("creation_by")
-	@CreatedBy	
+	@CreatedBy
 	private String creationBy;	
 	
 	@NotNull(message = "Creation Date may not be null")
 	@Field("creation_date")
-	@CreatedDate
+	@CreatedDate	
 	private Date creationDate;	
 		
 	@Field("updated_by")
-	@LastModifiedBy		
+	@LastModifiedBy
 	private String updatedBy;
 	
 	@Field("updated_date")
 	@LastModifiedDate	
-	private Date updatedDate;		
+	private Date updatedDate;	
 }
