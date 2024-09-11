@@ -21,16 +21,22 @@ import es.uniovi.avib.morphing.projections.backend.organization.domain.Organizat
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Project;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Resource;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseAdminDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseAdminTotalDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseProjectDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.OrganizationAdminDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.OrganizationAdminTotalDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.OrganizationDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ProjectAminDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.ProjectAminTotalDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ProjectDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ResourceDto;
-import es.uniovi.avib.morphing.projections.backend.organization.dto.UserCaseDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.DashboardTotalDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.JobDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseUserDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserDto;
-import es.uniovi.avib.morphing.projections.backend.organization.dto.UserOrganizationDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.OrganizationUserDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.OrganizationUserTotalDto;
 
 @Slf4j
 @Service
@@ -127,7 +133,7 @@ public class CaseService {
 		return _case;
 	}
 	
-	public UserCaseDto findCasesByOrganizationAndUser(String organizationId, String userId) {
+	public CaseUserDto findCasesByOrganizationAndUser(String organizationId, String userId) {
 		log.debug("findCasesByUser: find cases from user id: {}", userId);
 		
 		// recover user from id
@@ -259,7 +265,7 @@ public class CaseService {
 					   """);
 				
 		Aggregation aggregation;
-		UserCaseDto userCaseDto = new UserCaseDto();
+		CaseUserDto userCaseDto = new CaseUserDto();
 		
 		if (userDto.getRole().equals(ADMIN_ID)) {
 			aggregation = Aggregation.newAggregation(aggregationOperationAdmin01, aggregationOperationAdmin02, aggregationOperationAdmin03);
@@ -312,10 +318,10 @@ public class CaseService {
 		else {
 			aggregation = Aggregation.newAggregation(aggregationOperationUser01, aggregationOperationUser02, aggregationOperationUser03);
 			
-			List<UserOrganizationDto> userOrganizationDtos = mongoTemplate.aggregate(aggregation, "user_organization", UserOrganizationDto.class).getMappedResults();
+			List<OrganizationUserDto> userOrganizationDtos = mongoTemplate.aggregate(aggregation, "user_organization", OrganizationUserDto.class).getMappedResults();
 			
 			// create User Cases from organization configuration by user
-			for (UserOrganizationDto userOrganizationDto : userOrganizationDtos) {
+			for (OrganizationUserDto userOrganizationDto : userOrganizationDtos) {
 				for (Organization organization : userOrganizationDto.getOrganizations()) {
 					OrganizationDto organizationDto = OrganizationDto.builder()
 							.organizationId(organization.getOrganizationId())
@@ -361,6 +367,247 @@ public class CaseService {
 				
 		return userCaseDto;
 	}			
+	
+	public DashboardTotalDto findTotalCasesByOrganizationAndUser(String organizationId, String userId) {
+		log.debug("findCasesByUser: find cases from user id: {}", userId);
+		
+		// recover user from id
+		UserDto userDto = userService.findById(userId);
+		
+		AggregationOperation aggregationOperationUser01 = Aggregation
+				.stage("""
+						{
+							 $match: {
+								$expr: {
+								  $eq: [ 
+								    '$user_id', { $toObjectId: "$userId" } 
+								  ] 
+								}
+							 }
+						}											
+					   """.replace("$userId", userId));		
+		
+		
+		AggregationOperation aggregationOperationUser02 = Aggregation
+				.stage("""
+						{						 						
+						 	$lookup: {
+							  from: 'image',
+							  localField: 'organization_id',
+							  foreignField: 'organization_id',
+							  as: 'image'
+							}
+						}
+					   """);
+		
+		AggregationOperation aggregationOperationUser03 = Aggregation
+				.stage("""
+						{
+							 $lookup: {
+								from: 'organization',
+								localField: 'organization_id',
+								foreignField: '_id',
+								as: 'organizations',
+								pipeline: [
+									{
+										$lookup: {
+						          			from: 'project',
+											localField: '_id',
+											foreignField: 'organization_id',
+											as: 'projects',
+											pipeline: [
+										      {
+											      $lookup: {
+											      from: "case",
+												  localField: "_id",
+												  foreignField: "project_id",
+												  as: "cases",
+												  pipeline: [
+												   {
+												     $lookup: {
+												       from: "job",
+												       localField: "_id",
+												       foreignField: "case_id",
+												       as: "jobs",
+												     },
+												   },												  
+												   {
+												     $lookup: {
+												       from: "resource",
+												       localField: "_id",
+												       foreignField: "case_id",
+												       as: "resources",
+												     },
+												   }
+												 ]
+										        }
+										      }
+									       ]					
+										}
+									}
+								]
+							}
+						}																	
+					   """);	
+		
+		AggregationOperation aggregationOperationAdmin01 = Aggregation
+				.stage("""
+						{
+							 $match: {
+								$expr: {
+								  $eq: [ 
+								    '$_id', { $toObjectId: "$organizationId" } 
+								  ] 
+								}
+							 }
+						}											
+					   """.replace("$organizationId", organizationId));	
+		
+		AggregationOperation aggregationOperationAdmin02 = Aggregation
+				.stage("""
+						{						 						
+						 	$lookup: {
+							  from: 'image',
+							  localField: '_id',
+							  foreignField: 'organization_id',
+							  as: 'image'
+							}
+						}
+					   """);
+
+		AggregationOperation aggregationOperationAdmin03 = Aggregation
+				.stage("""
+						 {						 						
+						 	$lookup: {
+							  from: 'project',
+							  localField: '_id',
+							  foreignField: 'organization_id',
+							  as: 'projects',
+							  pipeline: [
+							    {
+							      $lookup: {
+							        from: "case",
+							        localField: "_id",
+							        foreignField: "project_id",
+							        as: "cases",
+							        pipeline: [
+							         {
+							           $lookup: {
+							             from: "job",
+							             localField: "_id",
+							             foreignField: "case_id",
+							             as: "jobs",
+							           },
+							         },
+							         {							         
+							           $lookup: {
+							             from: "resource",
+							             localField: "_id",
+							             foreignField: "case_id",
+							             as: "resources",
+							           },
+							         }
+							       ]
+							      }
+							    }
+							  ]
+							}								 
+						}																	
+					   """);
+
+		AggregationOperation aggregationOperationAdmin04 = Aggregation
+				.stage("""
+						 {						 						
+						 	$lookup: {
+							  from: 'user_organization',
+							  localField: '_id',
+							  foreignField: 'organization_id',
+							  as: 'users',
+							}								 
+						}																	
+					   """);
+		
+		Aggregation aggregation;
+		
+		int totalCases = 0;
+		int totalResources = 0;
+		int totalJobs = 0;
+		int totalUsers = 0;
+		
+		if (userDto.getRole().equals(ADMIN_ID)) {
+			aggregation = Aggregation.newAggregation(aggregationOperationAdmin01, aggregationOperationAdmin02, aggregationOperationAdmin03, aggregationOperationAdmin04);
+			
+			List<OrganizationAdminTotalDto> organizations = mongoTemplate.aggregate(aggregation, "organization", OrganizationAdminTotalDto.class).getMappedResults();
+			
+			// create User Cases from organization configuration by user
+			for (OrganizationAdminTotalDto organization : organizations) {
+					if (organization.getUsers() != null) {
+						totalUsers = organization.getUsers().size();
+					}
+				
+					if (organization.getProjects() != null) {
+						for (ProjectAminTotalDto project : organization.getProjects()) {
+							if (project.getCases() != null) {
+								for (CaseAdminTotalDto cs : project.getCases()) {
+									totalCases = totalCases + 1;
+									
+									if (cs.getJobs() != null) {
+										for (@SuppressWarnings("unused") JobDto job : cs.getJobs()) {
+											totalJobs = totalJobs + 1;
+										}
+									}
+									
+									if (cs.getResources() != null) {
+										for (@SuppressWarnings("unused") ResourceDto resource : cs.getResources()) {
+											totalResources = totalResources + 1;
+										}							
+									}
+								}
+							}
+						}
+				}
+			}			
+		}
+		else {
+			aggregation = Aggregation.newAggregation(aggregationOperationUser01, aggregationOperationUser02, aggregationOperationUser03);
+			
+			List<OrganizationUserTotalDto> userOrganizationDtos = mongoTemplate.aggregate(aggregation, "user_organization", OrganizationUserTotalDto.class).getMappedResults();
+			
+			// create User Cases from organization configuration by user
+			for (OrganizationUserTotalDto userOrganizationDto : userOrganizationDtos) {
+				//totalUsers = userOrganizationDtos.size();
+				
+				if (userOrganizationDto.getOrganizations() != null) {
+					for (Organization organization : userOrganizationDto.getOrganizations()) {
+						if (organization.getProjects() != null) {
+							for (Project project : organization.getProjects()) {
+								if (project.getCases() != null) {
+									for (Case cs : project.getCases()) {
+										totalCases = totalCases + 1;
+										
+										if (cs.getResources() != null) {
+											for (@SuppressWarnings("unused") Resource resource : cs.getResources()) {
+												totalResources = totalResources + 1;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}				
+		}	
+				
+		DashboardTotalDto resourceTotalDto = DashboardTotalDto.builder()
+				.totalCases(totalCases)
+				.totalJobs(totalJobs)
+				.totalResources(totalResources)
+				.totalUsers(totalUsers)
+			.build();
+				
+		return resourceTotalDto;
+	}
 	
 	public Case save(Case _case) {
 		log.debug("save: save case");

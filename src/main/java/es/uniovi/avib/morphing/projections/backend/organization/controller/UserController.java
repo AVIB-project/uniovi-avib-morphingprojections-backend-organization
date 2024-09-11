@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.uniovi.avib.morphing.projections.backend.organization.domain.User;
-import es.uniovi.avib.morphing.projections.backend.organization.dto.UserCaseDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseUserDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserRequestDto;
 import es.uniovi.avib.morphing.projections.backend.organization.service.UserService;
@@ -73,12 +73,12 @@ public class UserController {
 	}
 	
 	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/{userId}/cases")	
-	public ResponseEntity<UserCaseDto> findCasesByUser(@PathVariable String userId) {
-		UserCaseDto userCaseDto = userService.findCasesByUser(userId);
+	public ResponseEntity<CaseUserDto> findCasesByUser(@PathVariable String userId) {
+		CaseUserDto userCaseDto = userService.findCasesByUser(userId);
 										
 		log.debug("findByUserAggregate: found user cases with userId: {}", userId);
 			
-		return new ResponseEntity<UserCaseDto>(userCaseDto, HttpStatus.OK);		
+		return new ResponseEntity<CaseUserDto>(userCaseDto, HttpStatus.OK);		
 	}
 	
 	@RequestMapping(method = { RequestMethod.POST }, produces = "application/json")	

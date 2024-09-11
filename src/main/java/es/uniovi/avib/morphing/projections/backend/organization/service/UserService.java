@@ -34,10 +34,10 @@ import es.uniovi.avib.morphing.projections.backend.organization.dto.Organization
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ProjectAminDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ProjectDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ResourceDto;
-import es.uniovi.avib.morphing.projections.backend.organization.dto.UserCaseDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseUserDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserKeycloakDto;
-import es.uniovi.avib.morphing.projections.backend.organization.dto.UserOrganizationDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.OrganizationUserDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserRequestDto;
 
 @Slf4j
@@ -299,7 +299,7 @@ public class UserService {
 		return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));	
 	}
 	
-	public UserCaseDto findCasesByUser(String userId) {
+	public CaseUserDto findCasesByUser(String userId) {
 		log.debug("findCasesByUser: find cases from user id: {}", userId);
 						
 		// recover user from id
@@ -394,7 +394,7 @@ public class UserService {
 					   """);
 				
 		Aggregation aggregation;
-		UserCaseDto userCaseDto = new UserCaseDto();
+		CaseUserDto userCaseDto = new CaseUserDto();
 		
 		if (userDto!= null && userDto.getRole().equals(ADMIN_ID)) {
 			aggregation = Aggregation.newAggregation(aggregationOperationAdmin01);
@@ -446,10 +446,10 @@ public class UserService {
 		else {
 			aggregation = Aggregation.newAggregation(aggregationOperationUser01, aggregationOperationUser02);
 			
-			List<UserOrganizationDto> userOrganizationDtos = mongoTemplate.aggregate(aggregation, "user_organization", UserOrganizationDto.class).getMappedResults();
+			List<OrganizationUserDto> userOrganizationDtos = mongoTemplate.aggregate(aggregation, "user_organization", OrganizationUserDto.class).getMappedResults();
 			
 			// create User Cases from organization configuration by user
-			for (UserOrganizationDto userOrganizationDto : userOrganizationDtos) {
+			for (OrganizationUserDto userOrganizationDto : userOrganizationDtos) {
 				for (Organization organization : userOrganizationDto.getOrganizations()) {
 					OrganizationDto organizationDto = OrganizationDto.builder()
 							.organizationId(organization.getOrganizationId())

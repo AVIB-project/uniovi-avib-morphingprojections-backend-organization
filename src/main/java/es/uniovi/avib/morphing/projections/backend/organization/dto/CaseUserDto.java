@@ -6,6 +6,6 @@ import java.util.List;
 import lombok.Getter;
 
 @Getter
-public class UserCaseDto {
+public class CaseUserDto {
 	private List<OrganizationDto> organizations = new ArrayList<OrganizationDto>();
 }

@@ -16,7 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Case;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseProjectDto;
-import es.uniovi.avib.morphing.projections.backend.organization.dto.UserCaseDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.DashboardTotalDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseUserDto;
 import es.uniovi.avib.morphing.projections.backend.organization.service.CaseService;
 
 @Slf4j
@@ -46,14 +47,23 @@ public class CaseController {
 	}
 	
 	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/organizations/{organizationId}/users/{userId}")	
-	public ResponseEntity<UserCaseDto> findCasesByOrganizationAndUser(@PathVariable String organizationId, @PathVariable String userId) {
-		UserCaseDto userCaseDto = caseService.findCasesByOrganizationAndUser(organizationId, userId);
+	public ResponseEntity<CaseUserDto> findCasesByOrganizationAndUser(@PathVariable String organizationId, @PathVariable String userId) {
+		CaseUserDto userCaseDto = caseService.findCasesByOrganizationAndUser(organizationId, userId);
 										
 		log.debug("findCasesByOrganizationAndUser: found user cases with organizationId {} and userId: {}", userId, organizationId);
 			
-		return new ResponseEntity<UserCaseDto>(userCaseDto, HttpStatus.OK);		
+		return new ResponseEntity<CaseUserDto>(userCaseDto, HttpStatus.OK);		
 	}
 		
+	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/organizations/{organizationId}/users/{userId}/total")	
+	public ResponseEntity<DashboardTotalDto> findTotalCasesByOrganizationAndUser(@PathVariable String organizationId, @PathVariable String userId) {
+		DashboardTotalDto resourceTotalDto = caseService.findTotalCasesByOrganizationAndUser(organizationId, userId);
+										
+		log.debug("findCasesByOrganizationAndUser: found user cases with organizationId {} and userId: {}", userId, organizationId);
+			
+		return new ResponseEntity<DashboardTotalDto>(resourceTotalDto, HttpStatus.OK);		
+	}
+	
 	@RequestMapping(method = { RequestMethod.POST }, produces = "application/json")	
 	public ResponseEntity<Case> save(@RequestBody Case _case) {		
 		Case caseSaved = caseService.save(_case);

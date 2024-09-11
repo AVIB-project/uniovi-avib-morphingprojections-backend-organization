@@ -10,7 +10,7 @@ import es.uniovi.avib.morphing.projections.backend.organization.domain.Organizat
 
 @Getter
 @Builder
-public class UserOrganizationDto {
+public class OrganizationUserDto {
 	private String id;
 	private String organization_id;
 	private String user_id;
