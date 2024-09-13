@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.User;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseUserDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.UserInviteRequestDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserRequestDto;
 import es.uniovi.avib.morphing.projections.backend.organization.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -102,5 +103,14 @@ public class UserController {
 		userService.resetPassword(userId, password);
 										
 		log.debug("resetPassword: reset password user with userId: {}", userId);		
-	}		
+	}
+	
+	@RequestMapping(method = { RequestMethod.POST }, produces = "application/json", value = "/inviteUser")	
+	public ResponseEntity<User> inviteUser(@RequestBody UserInviteRequestDto userInviteRequestDto) throws Exception {		
+		User user = userService.inviteUser(userInviteRequestDto);
+
+		log.debug("save: create/update user with userId: {} from Manager Service", user.getUserId());
+			
+		return new ResponseEntity<User>(user, HttpStatus.OK);			
+	}	
 }

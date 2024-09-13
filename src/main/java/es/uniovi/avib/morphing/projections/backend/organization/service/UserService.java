@@ -36,6 +36,7 @@ import es.uniovi.avib.morphing.projections.backend.organization.dto.ProjectDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ResourceDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseUserDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.UserInviteRequestDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserKeycloakDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.OrganizationUserDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserRequestDto;
@@ -613,4 +614,25 @@ public class UserService {
 		restTemplate.postForEntity(url, password, Void.class);
 		
 	}
+	
+	public User inviteUser(UserInviteRequestDto userInviteRequestDto) throws Exception {
+		log.debug("inviteUser user");
+
+		// recover system user
+		Optional<User> user = userRepository.findByEmail(userInviteRequestDto.getEmail());
+		
+		if (user.isEmpty()) {
+			throw new Exception("User not exist");
+		}
+						
+		// create user organization
+		UserOrganization userOrganization = UserOrganization.builder()
+			.userId(user.get().getUserId())
+			.organizationId(userInviteRequestDto.getOrganizationId())
+		.build();
+		
+		userOrganizationRepository.save(userOrganization);
+		
+		return user.get();
+	}	
 }
