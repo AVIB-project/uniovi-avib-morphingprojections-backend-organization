@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,13 +21,13 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import es.uniovi.avib.morphing.projections.backend.organization.configuration.StorageConfig;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Resource;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ResourceDto;
 import es.uniovi.avib.morphing.projections.backend.organization.repository.ResourceRepository;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -175,6 +176,25 @@ public class ResourceService {
 		return responseEntityStr.getBody();			
 	}
     
+ 	public Object downloadFileByFilename(String organizationId, String projectId, String caseId, String file) {
+		log.info("download file from name {}", file);
+		
+		// put object into minio
+		String url = "http://" + storageConfig.getHost() + ":" + storageConfig.getPort() + "/storage"
+			+ "/organizations/" + organizationId
+			+ "/projects/" + projectId
+			+ "/cases/" + caseId
+			+ "/file/" + file;
+						
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.CONTENT_TYPE, "text/csv; charset=utf-8");
+        HttpEntity<String> entity = new HttpEntity<String>(headers);
+        
+        ResponseEntity<byte[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
+	
+		return responseEntity.getBody();
+     } 
+ 	
 	public void deleteResource(String organizationId, String projectId, String caseId, String file) {
 		log.info("deleteResource file {} from service", file);
 		
