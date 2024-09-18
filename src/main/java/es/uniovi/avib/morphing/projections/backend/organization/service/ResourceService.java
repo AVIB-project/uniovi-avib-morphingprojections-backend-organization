@@ -71,7 +71,9 @@ public class ResourceService {
 					.description(resource.getDescription())
 					.type(resource.getType())
 					.createdBy(resource.getCreationBy())
-					.createdDate(resource.getCreationDate())
+					.creationDate(resource.getCreationDate())
+					.updatedBy(resource.getUpdatedBy())
+					.updatedDate(resource.getUpdatedDate())
 					.build());		
 		}
 									

@@ -1,6 +1,7 @@
 package es.uniovi.avib.morphing.projections.backend.organization.domain;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -43,6 +44,13 @@ public class Image {
 	@NotNull(message = "Version may not be null")
 	@Field("version")
 	private String version;
+
+	@NotNull(message = "Command may not be null")
+	@Field("command")
+	private String command;
+	
+	@Field("parameters")
+	private List<String> parameters;
 	
 	@NotNull(message = "Creation by may not be null")
 	@Field("creation_by")

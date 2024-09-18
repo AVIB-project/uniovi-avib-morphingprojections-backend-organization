@@ -13,6 +13,8 @@ public class ResourceDto {
 	private String description;
 	private String type;
 	private String createdBy;
-	private Date createdDate;
+	private Date creationDate;
+	private String updatedBy;
+	private Date updatedDate;	
 }
 	
