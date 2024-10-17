@@ -45,6 +45,10 @@ public class Image {
 	@Field("version")
 	private String version;
 
+	@NotNull(message = "Environment may not be null")
+	@Field("environment")
+	private String environment;
+	
 	@NotNull(message = "Command may not be null")
 	@Field("command")
 	private String command;

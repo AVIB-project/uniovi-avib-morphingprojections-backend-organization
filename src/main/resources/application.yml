@@ -16,24 +16,10 @@ spring:
       database: configuration
       username: root
       password: q8SFbdesFv
-      
   servlet:    
     multipart:
       max-file-size: 500MB
       max-request-size: 500MB      
-
-# using ingress
-#spring:
-#  elasticsearch:
-#    host: minikube.io
-#    port: 443
-#    pathPrefix: /mongodb/
-#    verifyHostnames: false
-#    validateCertificates: false
-#    authentication-database: admin    
-#    database: configuration
-#    username: root
-#    password: password
 
 annotation:
   host: localhost
@@ -46,7 +32,7 @@ storage:
 security:
   host: localhost
   port: 8085
-              
+
 ---
 server:
   port: 8082
@@ -61,16 +47,14 @@ spring:
   config:
     activate:
       on-profile: avib
-      
   data:
     mongodb:
-      host: avib-mongodb
+      host: gsdpi-mongodb
       port: 27017
       authentication-database: admin
       database: configuration
       username: root
-      password: password   
-      
+      password: 46cfdg1oXL   
   servlet:    
     multipart:
       max-file-size: 500MB
