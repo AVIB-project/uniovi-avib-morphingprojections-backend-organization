@@ -420,6 +420,7 @@ public class UserService {
 					for (CaseAdminDto cs : project.getCases()) {
 						CaseDto caseDto = CaseDto.builder()
 								.caseId(cs.getId())
+								.projectId(project.getId())
 								.name(cs.getName())
 								.description(cs.getDescription())
 								.build();
@@ -468,6 +469,7 @@ public class UserService {
 						for (Case cs : project.getCases()) {
 							CaseDto caseDto = CaseDto.builder()
 									.caseId(cs.getCaseId())
+									.projectId(project.getProjectId())
 									.name(cs.getName())
 									.description(cs.getDescription())
 									.build();

@@ -11,6 +11,7 @@ import lombok.Getter;
 @Builder
 public class CaseDto {
 	private String caseId;
+	private String projectId;
 	private String name;
 	private String description;
 	private Image image;
