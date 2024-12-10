@@ -3,9 +3,11 @@ package es.uniovi.avib.morphing.projections.backend.organization.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import org.bson.types.ObjectId;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
@@ -24,16 +26,20 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import es.uniovi.avib.morphing.projections.backend.organization.configuration.JobConfig;
 import es.uniovi.avib.morphing.projections.backend.organization.configuration.StorageConfig;
 import es.uniovi.avib.morphing.projections.backend.organization.domain.Resource;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.JobSubmitConverterDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.ResourceDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.UploadFileResponse;
 import es.uniovi.avib.morphing.projections.backend.organization.repository.ResourceRepository;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ResourceService {
-	private final StorageConfig storageConfig;	
+	private final StorageConfig storageConfig;
+	private final JobConfig jobConfig;
 	
 	private final RestTemplate restTemplate;
 	private final MongoTemplate mongoTemplate;
@@ -143,6 +149,7 @@ public class ResourceService {
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 		
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		
 		Arrays.asList(files).forEach(file -> {			
 			// check if the resource exist (only one file pear each case type (datamatrix, sample_annotation, attribute_annotation)			
 			Resource resource = findByFileAndType(caseId, type);
@@ -171,9 +178,18 @@ public class ResourceService {
 			body.add("file[]", file.getResource());			    					
 		});
 		
+		// save csv resource to minio
 		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);		
 		
-		ResponseEntity<Object> responseEntityStr = restTemplate.postForEntity(url, requestEntity, Object.class);
+		//ResponseEntity<Object> responseEntityStr = restTemplate.postForEntity(url, requestEntity, Object.class);
+		ResponseEntity<List<UploadFileResponse>> responseEntityStr = restTemplate.exchange(url, HttpMethod.POST,
+				requestEntity, new ParameterizedTypeReference<List< UploadFileResponse>>() {});
+
+		List<UploadFileResponse> uploadFileResponses = responseEntityStr.getBody();
+								
+		// trigger kubernetes job to convert csv resource to parquet for datamatrix files
+		if (type.equals("datamatrix"))
+			submitConverterJob(organizationId, projectId, caseId, uploadFileResponses.get(0).getName(), description);
 		
 		return responseEntityStr.getBody();			
 	}
@@ -214,4 +230,24 @@ public class ResourceService {
 		
 		deleteById(resource.getResourceId());
 	}    
+	
+	@SuppressWarnings("serial")
+	private Object submitConverterJob(String organizationId, String projectId, String caseId, String file, String description) {
+		log.info("submit converter job file");
+				
+		String url = "http://" + jobConfig.getHost() + ":" + jobConfig.getPort() + "/jobs/submitConverterJob";
+		
+		JobSubmitConverterDto jobSubmitConverterDto = JobSubmitConverterDto.builder()
+				.organizationId(organizationId)
+				.projectId(projectId)
+				.caseId(caseId)
+				.parameters(new HashMap<String, String>() {{
+				    put("file", file);
+				    put("description", description);
+				}}).build();
+		
+		ResponseEntity<Object> responseEntityStr = restTemplate.postForEntity(url, jobSubmitConverterDto, Object.class);
+		
+		return responseEntityStr.getBody();		
+	}	
 }

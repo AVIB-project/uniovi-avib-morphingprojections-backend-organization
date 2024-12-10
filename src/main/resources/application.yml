@@ -18,8 +18,8 @@ spring:
       password: q8SFbdesFv
   servlet:    
     multipart:
-      max-file-size: 500MB
-      max-request-size: 500MB      
+      max-file-size: 3GB
+      max-request-size: 3GB      
 
 annotation:
   host: localhost
@@ -33,6 +33,10 @@ security:
   host: localhost
   port: 8085
 
+job:
+  host: localhost
+  port: 8084
+  
 ---
 server:
   port: 8082
@@ -57,8 +61,8 @@ spring:
       password: 46cfdg1oXL   
   servlet:    
     multipart:
-      max-file-size: 500MB
-      max-request-size: 500MB      
+      max-file-size: 3GB
+      max-request-size: 3GB      
 
 annotation:
   host: uniovi-avib-morphingprojections-backend-annotation
@@ -71,3 +75,7 @@ storage:
 security:
   host: uniovi-avib-morphingprojections-backend-security
   port: 8085
+  
+job:
+  host: uniovi-avib-morphingprojections-backend-job
+  port: 8084  
