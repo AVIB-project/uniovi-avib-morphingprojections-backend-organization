@@ -40,6 +40,7 @@ import es.uniovi.avib.morphing.projections.backend.organization.dto.UserInviteRe
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserKeycloakDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.OrganizationUserDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserRequestDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.UserSessionDto;
 
 @Slf4j
 @Service
@@ -637,4 +638,15 @@ public class UserService {
 		
 		return user.get();
 	}	
+	
+	public UserSessionDto[] getClientUserSessions(String realm) throws Exception {
+		log.debug("get session from realm : {}", realm);
+
+		// save user in Keycloack
+		String url = "http://" + securityConfig.getHost() + ":" + securityConfig.getPort() + "/security/realms/" + DEF_REALM + "/sessions";
+	
+		ResponseEntity<UserSessionDto[]> userStos = restTemplate.getForEntity(url, UserSessionDto[].class);
+		
+		return userStos.getBody();
+	}
 }

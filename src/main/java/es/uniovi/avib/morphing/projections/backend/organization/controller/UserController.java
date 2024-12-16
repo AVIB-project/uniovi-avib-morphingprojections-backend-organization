@@ -16,6 +16,7 @@ import es.uniovi.avib.morphing.projections.backend.organization.dto.CaseUserDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserInviteRequestDto;
 import es.uniovi.avib.morphing.projections.backend.organization.dto.UserRequestDto;
+import es.uniovi.avib.morphing.projections.backend.organization.dto.UserSessionDto;
 import es.uniovi.avib.morphing.projections.backend.organization.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -112,5 +113,12 @@ public class UserController {
 		log.debug("save: create/update user with userId: {} from Manager Service", user.getUserId());
 			
 		return new ResponseEntity<User>(user, HttpStatus.OK);			
+	}
+	
+	@RequestMapping(method = { RequestMethod.GET }, produces = "application/json", value = "/realms/{realm}/sessions")	
+	public ResponseEntity<UserSessionDto[]> getClientUserSessions(@PathVariable String realm) throws Exception {
+		UserSessionDto[] userSessionDtos = userService.getClientUserSessions(realm);
+			
+		return new ResponseEntity<UserSessionDto[]>(userSessionDtos, HttpStatus.OK);		
 	}	
 }
