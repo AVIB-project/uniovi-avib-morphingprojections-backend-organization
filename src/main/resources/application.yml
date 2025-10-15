@@ -1,11 +1,5 @@
 server:
   port: 8082
-
-management:
-  endpoint:
-    health:
-      probes:
-        enabled: true
       
 spring:
   data:
@@ -14,8 +8,8 @@ spring:
       port: 27017            
       authentication-database: admin
       database: configuration
-      username: root
-      password: q8SFbdesFv
+      username: admin
+      password: password
   servlet:    
     multipart:
       max-file-size: 3GB
@@ -40,42 +34,36 @@ job:
 ---
 server:
   port: 8082
-
-management:
-  endpoint:
-    health:     
-      probes:
-        enabled: true
-          
+     
 spring:
   config:
     activate:
       on-profile: avib
   data:
     mongodb:
-      host: gsdpi-mongodb
+      host: avib-mongodb
       port: 27017
       authentication-database: admin
       database: configuration
-      username: root
-      password: 46cfdg1oXL   
+      username: admin
+      password: password   
   servlet:    
     multipart:
       max-file-size: 3GB
       max-request-size: 3GB      
 
 annotation:
-  host: uniovi-avib-morphingprojections-backend-annotation
+  host: avib-backend-annotation
   port: 8081
           
 storage:        
-  host: uniovi-avib-morphingprojections-backend-storage
+  host: avib-backend-storage
   port: 8083
   
 security:
-  host: uniovi-avib-morphingprojections-backend-security
+  host: avib-backend-security
   port: 8085
   
 job:
-  host: uniovi-avib-morphingprojections-backend-job
+  host: avib-backend-job
   port: 8084  
